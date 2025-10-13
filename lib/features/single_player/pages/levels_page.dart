@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/instance_manager.dart';
 import 'package:get/route_manager.dart';
-import 'package:word_guess/controllers/single_player_page_controller.dart';
-import 'package:word_guess/models/levels.dart';
+import 'package:word_guess/features/single_player/controllers/single_player_page_controller.dart';
+import 'package:word_guess/features/single_player/models/levels.dart';
 import 'package:word_guess/routes/routes.dart';
 
 class XLevelsPage extends StatelessWidget {
@@ -26,6 +26,7 @@ class XLevelsPage extends StatelessWidget {
                 Text('حدد المستوى', style: TextStyle(fontSize: 30)),
                 Spacer(),
                 DropdownMenu<XLevels>(
+                  enabled: true,
                   onSelected: (value) {
                     if (value != null) {
                       controller.startGame(level: value, attempts: 6);
@@ -40,6 +41,7 @@ class XLevelsPage extends StatelessWidget {
                     DropdownMenuEntry(
                       value: XLevels.legendary,
                       label: 'اسطوري',
+                      enabled: false,
                     ),
                   ],
                 ),
@@ -54,12 +56,10 @@ class XLevelsPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextFormField(
+                        enabled: true,
                         textAlign: TextAlign.center,
                         controller: textController,
-                        decoration: InputDecoration(
-                          hint: Text('اكتب الكلمة'),
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: InputDecoration(hint: Text('اكتب الكلمة')),
                         onFieldSubmitted: (value) {
                           final attempts = int.tryParse(
                             attemptsController.text,
@@ -84,8 +84,6 @@ class XLevelsPage extends StatelessWidget {
                         controller: attemptsController,
                         decoration: InputDecoration(
                           hint: Text('عدد المحاولات'),
-
-                          border: OutlineInputBorder(),
                         ),
                         onFieldSubmitted: (value) {
                           final attempts = int.tryParse(value);

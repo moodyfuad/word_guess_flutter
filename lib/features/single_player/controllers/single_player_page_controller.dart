@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:word_guess/models/levels.dart';
-import 'package:word_guess/models/word_model.dart';
+import 'package:word_guess/features/single_player/models/levels.dart';
+import 'package:word_guess/features/single_player/models/word_model.dart';
 
 class XSinglePlayerPageController extends GetxController {
   String selectedWord = '';
@@ -29,7 +29,7 @@ class XSinglePlayerPageController extends GetxController {
       for (var letter in w.letters) {
         final previousLetter =
             board[currentRow.value - 1].letters[letter.index];
-        if (previousLetter.state == XLetterStates.correctPosAndExist) {
+        if (previousLetter.state == XLetterStates.correct) {
           words[words.indexOf(w)].letters[letter.index] = previousLetter;
         }
       }
@@ -67,7 +67,7 @@ class XSinglePlayerPageController extends GetxController {
     if (currentRow.value >= attempts) {
       return;
     }
-    if (currentLetter.state == XLetterStates.correctPosAndExist) {
+    if (currentLetter.state == XLetterStates.correct) {
       if (currentCol.value >= wordLength - 1) {
         return;
       } else {
@@ -106,7 +106,7 @@ class XSinglePlayerPageController extends GetxController {
   void onBackspacePressed() {
     carouselController.animateToItem(currentRow.value);
     if (currentCol.value >= 0 && currentRow.value < attempts) {
-      if (currentLetter.state == XLetterStates.correctPosAndExist) {
+      if (currentLetter.state == XLetterStates.correct) {
         currentCol.value = (currentCol.value == 0) ? 0 : currentCol.value - 1;
         onBackspacePressed();
         return;
@@ -137,13 +137,13 @@ class XSinglePlayerPageController extends GetxController {
     final List<XLetterModel> modified = [];
     for (var element in letters) {
       if (selectedWord.contains(element.letter)) {
-        element.state = XLetterStates.exist;
+        element.state = XLetterStates.present;
       }
       if (selectedWord[element.index] == element.letter) {
-        element.state = XLetterStates.correctPosAndExist;
+        element.state = XLetterStates.correct;
       }
       if (!selectedWord.contains(element.letter)) {
-        element.state = XLetterStates.allWrong;
+        element.state = XLetterStates.absent;
       }
     }
     return modified;
@@ -170,12 +170,12 @@ class XSinglePlayerPageController extends GetxController {
 
   void _placeCorrectCharsAtNextRow() {
     if (board[currentRow.value].letters.every(
-      (letter) => letter.state == XLetterStates.correctPosAndExist,
+      (letter) => letter.state == XLetterStates.correct,
     )) {
       return;
     } else if (currentRow.value < attempts - 1) {
       board[currentRow.value].letters.forEach((letter) {
-        if (letter.state == XLetterStates.correctPosAndExist) {
+        if (letter.state == XLetterStates.correct) {
           board[currentRow.value + 1].letters[letter.index] = letter;
         }
       });

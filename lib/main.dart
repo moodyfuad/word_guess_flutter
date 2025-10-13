@@ -1,33 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:word_guess/pages/home_page.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:word_guess/services/storage_service.dart';
+import 'package:word_guess/localization/home_page_strings.dart';
+import 'package:word_guess/localization/translation.dart';
 import 'package:word_guess/routes/pages.dart';
 import 'package:word_guess/routes/routes.dart';
-import 'controllers/game_controller.dart';
+import 'package:word_guess/services/hub_services.dart';
+import 'package:word_guess/services/network_services.dart';
+import 'package:word_guess/theme/app_theme.dart';
 
-void main() {
-  runApp(const WordleArabicApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Get.putAsync(() async => await NetworkService().init());
+  await GetStorage.init();
+  Get.put(StorageService());
+  final id = Get.find<StorageService>().playerId;
+
+  Get.put(XHubServices(id!));
+
+  runApp(const MyApp());
 }
 
-class WordleArabicApp extends StatelessWidget {
-  const WordleArabicApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Get.put(GameController());
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       getPages: XPages.appPages,
       initialRoute: XRoutes.home,
+      translations: XTranslation(),
       locale: Locale('ar', 'SA'),
-      title: 'وردل عربي',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.green,
-        useMaterial3: true,
-        fontFamily: 'Cairo',
-      ),
-      home: const XHomePage(),
+      title: XHomePageStrings.appName,
+      theme: XAppTheme.light,
+      darkTheme: XAppTheme.dark,
     );
   }
 }

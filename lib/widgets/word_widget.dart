@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:word_guess/models/word_model.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:word_guess/features/single_player/models/word_model.dart';
 
 class XWordWidget extends StatefulWidget {
   const XWordWidget({super.key, required this.word});
@@ -9,21 +10,20 @@ class XWordWidget extends StatefulWidget {
 }
 
 class _XWordWidgetState extends State<XWordWidget> {
-
   void updateLetter(int index, XLetterModel letter) {
     setState(() {
       widget.word.letters[index] = letter;
     });
   }
 
-  Color? _getCellColor(XLetterStates state) {
+  Color? _getCellColor(String state) {
     return switch (state) {
-      XLetterStates.correctPosAndExist => Colors.green,
-      XLetterStates.exist => Colors.amberAccent,
-      XLetterStates.allWrong => Colors.blueGrey,
+      XLetterStates.correct => Colors.green,
+      XLetterStates.present => Colors.amberAccent,
+      XLetterStates.absent => Colors.blueGrey,
       XLetterStates.none => Colors.blue[100],
       XLetterStates.empty => Colors.white,
-      _ => Colors.white,
+      _ => Colors.black,
     };
   }
 
@@ -56,7 +56,9 @@ class _XWordWidgetState extends State<XWordWidget> {
               ),
             ),
           )
-          .toList(),
+          .toList()
+          .animate(interval: 500.ms)
+          .flip(duration: Duration(milliseconds: 500)),
     );
   }
 }

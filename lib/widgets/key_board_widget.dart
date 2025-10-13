@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:word_guess/theme/app_colors.dart';
 
 class XKeyBoardWidget extends StatelessWidget {
   XKeyBoardWidget({
@@ -74,26 +75,41 @@ class XKeyBoardWidget extends StatelessWidget {
   }
 }
 
-Widget XKeyWidget(String key, bool primary, void Function(String key) onTap) {
-  return Expanded(
-    flex: primary ? 2 : 1,
-    child: GestureDetector(
-      onTap: () => onTap(key),
-      child: Container(
-        margin: const EdgeInsets.all(1),
+// Widget XKeyWidget(String key, bool primary, void Function(String key) onTap) {
+//   return XKeyWidget();
+// }
 
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey),
-          color: primary ? Colors.amberAccent : Colors.white60,
-        ),
-        child: Center(
-          child: Text(
-            key,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+class XKeyWidget extends StatelessWidget {
+  const XKeyWidget(this.keyLetter, this.primary, this.onTap);
+  final String keyLetter;
+  final bool primary;
+  final void Function(String key) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: primary ? 2 : 1,
+      child: GestureDetector(
+        onTap: () => onTap(keyLetter),
+        child: Container(
+          margin: const EdgeInsets.all(1),
+
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: primary
+                  ? XAppColorsLight.primary_action
+                  : Colors.blueGrey[300]!,
+            ),
+            color: primary
+                ? XAppColorsLight.primary_action
+                : XAppColorsLight.bg_element_container,
+          ),
+          child: Center(
+            child: Text(keyLetter, style: Get.textTheme.titleSmall),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
