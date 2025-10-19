@@ -1,28 +1,30 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/single_player/models/letter_model.dart';
 import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/levels.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
+import 'package:word_guess/services/storage_service.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 
 class XSinglePlayerPageController extends GetxController {
-  String selectedWord = '';
+  String _selectedWord = '';
   //Vars
   final RxList<WordModel> board = <WordModel>[].obs;
-  final RxInt currentRow = 0.obs;
-  final RxInt currentCol = 0.obs;
+  int _currentRow = 0;
+  int _currentCol = 0;
   final carouselController = CarouselController(initialItem: 0);
   // Getters
   int get attempts => board.length;
-  int get wordLength => selectedWord.length;
-  LetterModel get currentLetter =>
-      board[currentRow.value].letters[currentCol.value];
-
+  int get wordLength => _selectedWord.length;
+  LetterModel get currentLetter => board[_currentRow].letters[_currentCol];
+  final _storage = Get.find<StorageService>();
+  //todo: handel when attempts reached
+  //todo: display the word when lose
   // public methods
   void replay() {
-    currentCol.value = 0;
-    currentRow.value = 0;
+    _currentCol = 0;
+    _currentRow = 0;
     startGame();
   }
 
@@ -30,8 +32,7 @@ class XSinglePlayerPageController extends GetxController {
     final words = List.generate(length, (_) => WordModel.generate(wordLength));
     for (var w in words) {
       for (var letter in w.letters) {
-        final previousLetter =
-            board[currentRow.value - 1].letters[letter.index];
+        final previousLetter = board[_currentRow - 1].letters[letter.index];
         if (previousLetter.state == XLetterStates.correct) {
           words[words.indexOf(w)].letters[letter.index] = previousLetter;
         }
@@ -48,11 +49,11 @@ class XSinglePlayerPageController extends GetxController {
     int attempts = 3,
     XLevels level = XLevels.medium,
   }) {
-    currentCol.value = 0;
-    currentRow.value = 0;
-    selectedWord =
+    _currentCol = 0;
+    _currentRow = 0;
+    _selectedWord =
         word ??
-        _getRandomWord(switch (level) {
+        Helper.getRandomWord(switch (level) {
           XLevels.easy => 3,
           XLevels.medium => 4,
           XLevels.hard => 5,
@@ -67,62 +68,75 @@ class XSinglePlayerPageController extends GetxController {
   }
 
   void onKeyTap(String key) {
-    if (currentRow.value >= attempts) {
+    if (_currentRow >= attempts) {
       return;
     }
-    if (currentLetter.state == XLetterStates.correct) {
-      if (currentCol.value >= wordLength - 1) {
-        return;
-      } else {
-        currentCol.value++;
+    if (_currentCol < wordLength) {
+      if (currentLetter.state == XLetterStates.correct) {
+        _currentCol++;
         onKeyTap(key);
         return;
-      }
-    } else {
-      carouselController.animateToItem(currentRow.value);
-      if (currentCol.value < wordLength) {
-        board[currentRow.value].letters[currentCol.value] = LetterModel(
+      } else {
+        carouselController.animateToItem(_currentRow);
+        board[_currentRow].letters[_currentCol] = LetterModel(
           letter: key,
           state: XLetterStates.none,
-          index: currentCol.value,
+          index: _currentCol,
         );
-        currentCol.value = (currentCol.value == wordLength - 1)
-            ? currentCol.value
-            : currentCol.value + 1;
+        update();
+        _currentCol++;
       }
+    } else {
+      return;
     }
-    update();
   }
 
   void onSubmitPressed() {
-    carouselController.animateToItem(currentRow.value);
-    if (currentRow.value < attempts && _isSubmitAllowed()) {
-      _validateRow(board[currentRow.value].letters);
+    carouselController.animateToItem(_currentRow);
+    if (_currentRow < attempts && _isSubmitAllowed()) {
+      _validateRow(board[_currentRow].letters);
       _placeCorrectCharsAtNextRow();
-      currentRow.value++;
-      currentCol.value = 0;
+      final isWinCase = (board[_currentRow].letters.every(
+        (l) => l.state == XLetterStates.correct,
+      ));
+      if (isWinCase) {
+        _storage.increasePlayedCount();
+        _storage.increaseWinCount();
+        _showWinDialog();
+      }
+      _currentRow++;
+      _currentCol = 0;
+      update();
     }
-    update();
-    carouselController.animateToItem(currentRow.value);
+    if (_currentRow >= attempts) {
+      _storage.increasePlayedCount();
+
+      _showLoseDialog();
+    }
+    carouselController.animateToItem(_currentRow);
   }
 
   void onBackspacePressed() {
-    carouselController.animateToItem(currentRow.value);
-    if (currentCol.value >= 0 && currentRow.value < attempts) {
-      if (currentLetter.state == XLetterStates.correct) {
-        currentCol.value = (currentCol.value == 0) ? 0 : currentCol.value - 1;
-        onBackspacePressed();
+    carouselController.animateToItem(_currentRow);
+
+    if (_currentCol > 0 && _currentRow < attempts) {
+      final letterToDelete = board[_currentRow].letters[_currentCol - 1];
+      if (letterToDelete.state == XLetterStates.correct) {
+        _currentCol = (_currentCol == 1) ? 1 : _currentCol - 1;
+        if (_currentCol > 1) {
+          onBackspacePressed();
+        }
         return;
       } else {
-        board[currentRow.value].letters[currentCol.value] = LetterModel(
+        board[_currentRow].letters[_currentCol - 1] = LetterModel(
           letter: '',
           state: XLetterStates.empty,
-          index: currentCol.value,
+          index: _currentCol - 1,
         );
-        currentCol.value = (currentCol.value == 0) ? 0 : currentCol.value - 1;
+        update();
+        _currentCol = (_currentCol == 0) ? 0 : _currentCol - 1;
       }
     }
-    update();
   }
 
   // overrides
@@ -134,10 +148,10 @@ class XSinglePlayerPageController extends GetxController {
 
   // private methods
   bool _isSubmitAllowed() {
-    final noEmptyCell = board[currentRow.value].letters.every(
+    final noEmptyCell = board[_currentRow].letters.every(
       (letter) => letter.state != XLetterStates.empty,
     );
-    if (noEmptyCell && currentRow.value < attempts) {
+    if (noEmptyCell && _currentRow < attempts) {
       return true;
     } else {
       return false;
@@ -147,171 +161,70 @@ class XSinglePlayerPageController extends GetxController {
   List<LetterModel> _validateRow(List<LetterModel> letters) {
     final List<LetterModel> modified = [];
     for (var element in letters) {
-      if (selectedWord.contains(element.letter)) {
+      if (_selectedWord.contains(element.letter)) {
         element.state = XLetterStates.present;
       }
-      if (selectedWord[element.index] == element.letter) {
+      if (_selectedWord[element.index] == element.letter) {
         element.state = XLetterStates.correct;
       }
-      if (!selectedWord.contains(element.letter)) {
+      if (!_selectedWord.contains(element.letter)) {
         element.state = XLetterStates.absent;
       }
     }
     return modified;
   }
 
-  String _getRandomWord(int length) {
-    // int index = Random.secure().nextInt(arabicWords6.length) - 1;
-    arabicWords6.shuffle(Random.secure());
-
-    final selected = arabicWords6.firstWhere((word) => word.length == length);
-
-    if (selected.length == length) {
-      return selected;
-    } else {
-      return _getRandomWord(length);
-    }
-  }
-
   void _placeCorrectCharsAtNextRow() {
-    if (board[currentRow.value].letters.every(
+    if (board[_currentRow].letters.every(
       (letter) => letter.state == XLetterStates.correct,
     )) {
       return;
-    } else if (currentRow.value < attempts - 1) {
-      board[currentRow.value].letters.forEach((letter) {
+    } else if (_currentRow < attempts - 1) {
+      for (var letter in board[_currentRow].letters) {
         if (letter.state == XLetterStates.correct) {
-          board[currentRow.value + 1].letters[letter.index] = letter;
+          board[_currentRow + 1].letters[letter.index] = letter;
         }
-      });
+      }
     }
   }
+
+
+  bool canPop = false;
+  _showLoseDialog() {
+    Get.defaultDialog(
+      title: '😆 خاسر 😆',
+      titleStyle: Get.textTheme.displayMedium,
+
+      content: Column(
+        children: [
+          Text('كلمتك كانت', style: Get.textTheme.titleSmall),
+          Text(_selectedWord, style: Get.textTheme.displayLarge),
+        ],
+      ),
+      confirm: ElevatedButton(
+        onPressed: () {
+          canPop = true;
+          Get.back(closeOverlays: true);
+        },
+        child: Text('موافق'),
+      ),
+    );
+  }
+
+  _showWinDialog() {
+    Get.defaultDialog(
+      title: '🎉 فائز  🎉',
+      titleStyle: Get.textTheme.displayMedium,
+      content: Text(
+        'مبروك الفوز\nالان سيتم تحويلك لصفحة تحديد المستوى\nحاول تختار مستوى اصعب',
+        textAlign: TextAlign.center,
+      ),
+      confirm: ElevatedButton(
+        onPressed: () {
+          Get.back(closeOverlays: true);
+        },
+        child: Text('موافق'),
+      ),
+    );
+  }
 }
-
-const List<String> arabicWords6 = [
-  'بيت',
-  'باب',
-  'شمس',
-  'قمر',
-  'نجم',
-  'بحر',
-  'جبل',
-  'نهر',
-  'شجر',
-  'ورد',
-  'ثمر',
-  'زرع',
-  'ماء',
-  'نار',
-  'هواء',
-  'تراب',
-  'ذهب',
-  'فضة',
-  'نحاس',
-  'حديد',
-  'لحم',
-  'عظم',
-  'جلد',
-  'شعر',
-  'وجه',
-  'عين',
-  'أذن',
-  'أنف',
-  'فم',
-  'يد',
-  'رجل',
-  'رأس',
-  'قلب',
-  'كبد',
-  'دم',
-  'عسل',
-  'لبن',
-  'خبز',
-  'ملح',
-  'سكر',
-  'رز',
-  'دقيق',
-  'زيت',
-  'خل',
-  'شاي',
-  'قهوة',
-  'تمر',
-  'تين',
-  'عنب',
-  'رمان',
-  'بصل',
-  'ثوم',
-  'جزر',
-  'فجل',
-  'خس',
-  'ملفوف',
-  'طماطم',
-  'خيار',
-  'فلفل',
-  'باذنجان',
-  'قلم',
-  'كتاب',
-  'دفتر',
-  'ورق',
-  'حبر',
-  'ممحاة',
-  'مسطرة',
-  'مقص',
-  'إبرة',
-  'خيط',
-  'مفتاح',
-
-  'دبلوم',
-  'درجة',
-  'علامة',
-  'نتيجة',
-  'معلومات',
-  'معرفة',
-  'علوم',
-  'أدب',
-  'تاريخ',
-  'جغرافيا',
-  'رياضيات',
-  'فيزياء',
-
-  'هاديك',
-  'صادقك',
-  'مخلص',
-  'حليمك',
-  'رحيمك',
-  'ناجحك',
-  'لطيفك',
-  'نظيفك',
-  'قويان',
-  'هادئك',
-  'غاضبك',
-  'صابر',
-  'صامت',
-  'مشرق',
-  'غامض',
-  'صاخب',
-  'باردك',
-  'مبدعك',
-  'ناصح',
-  'فارس',
-  'جابر',
-  'مالك',
-
-  'غالبك',
-  'قائدك',
-  'فائزك',
-  'خالدك',
-  'سامي',
-  'نبيهك',
-  'حكيم',
-  'محبوب',
-  'مسرور',
-  'مندهش',
-  'مؤمن',
-  'صادقك',
-  'منشرح',
-  'مجلات',
-  'مناطق',
-  'محافظ',
-  'مكاتب',
-];

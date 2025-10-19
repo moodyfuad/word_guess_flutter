@@ -14,12 +14,12 @@ class XInputDecorationTheme {
         width: 1,
       ),
     ),
-    errorStyle: Get.textTheme.labelMedium!.copyWith(
+    errorStyle: ThemeData.light().textTheme.labelMedium!.copyWith(
       color: XAppColorsLight.danger,
     ),
     floatingLabelBehavior: FloatingLabelBehavior.auto,
-    labelStyle: Get.textTheme.labelLarge,
-    helperStyle: Get.textTheme.labelLarge,
+    labelStyle: ThemeData.light().textTheme.labelLarge,
+    helperStyle: ThemeData.light().textTheme.labelLarge,
     floatingLabelAlignment: FloatingLabelAlignment.start,
     filled: true,
 

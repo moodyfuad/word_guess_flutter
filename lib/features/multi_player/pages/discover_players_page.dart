@@ -34,12 +34,12 @@ class DiscoverPlayersPage extends StatelessWidget {
 
 class _UserCard extends StatelessWidget {
   const _UserCard({
-    Key? key,
+    super.key,
     this.avatar,
     required this.name,
     required this.description,
     this.onButtonPress,
-  }) : super(key: key);
+  });
   final Widget? avatar;
   final String name;
   final String description;

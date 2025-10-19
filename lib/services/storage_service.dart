@@ -20,9 +20,15 @@ class StorageService extends GetxService {
 
   static const _playerNameKey = 'playerName';
   static const _playerIdKey = 'playerId';
+  static const _playedCountKey = 'playedCount';
+  static const _winCountKey = 'winCount';
+  static const _authTokenKey = 'auth_token';
 
   String get playerName => _box.read<String>(_playerNameKey) ?? '';
   String get playerId => _box.read<String>(_playerIdKey)!;
+  String? get token => _box.read<String>(_authTokenKey);
+  int get playedCount => _box.read<int>(_playedCountKey) ?? 0;
+  int get winCount => _box.read<int>(_winCountKey) ?? 0;
 
   Future<void> updatePlayerName(String name) async {
     await _box.write(_playerNameKey, name);
@@ -30,5 +36,21 @@ class StorageService extends GetxService {
 
   Future<void> updatePlayerId(String id) async {
     await _box.write(_playerIdKey, id);
+  }
+
+  void setToken(String token) {
+    _box.write(_authTokenKey, token);
+  }
+
+  void increasePlayedCount() {
+    _box.write(_playedCountKey, playedCount + 1);
+  }
+
+  void increaseWinCount() {
+    _box.write(_winCountKey, winCount + 1);
+  }
+
+  void clearToken() {
+    _box.remove(_authTokenKey);
   }
 }

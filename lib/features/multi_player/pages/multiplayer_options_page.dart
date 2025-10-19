@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:word_guess/features/multi_player/controllers/multiplayer_options_page_controller.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/routes/routes.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 
 class XMultiplayerOptionsPage extends StatelessWidget {
   XMultiplayerOptionsPage({super.key});
@@ -62,12 +63,12 @@ class XMultiplayerOptionsPage extends StatelessWidget {
             ),
             if (_controller.key.isEmpty) ...[
               const SizedBox(height: 20),
-              _buildTextFieldForCreateRoom(
+              Helper.buildTextFieldForCreateRoom(
                 _controller.maxAttemptsController,
                 'اقصى عدد لمحاولات التخمين',
-                'اقصى عدد مسموح 8',
+                'اقصى عدد مسموح 20',
               ),
-              _buildTextFieldForCreateRoom(
+              Helper.buildTextFieldForCreateRoom(
                 _controller.wordLengthController,
                 'عدد حروف الكلمة',
                 'اقصى عدد مسموح 7',
@@ -103,28 +104,7 @@ class XMultiplayerOptionsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextFieldForCreateRoom(
-    TextEditingController controller,
-    String lable,
-    String helper, [
-    int max = 6,
-  ]) {
-    return TextField(
-      controller: controller,
-      maxLength: 1,
-      keyboardType: TextInputType.numberWithOptions(),
-      decoration: InputDecoration(
-        label: Text(
-          lable,
-          style: Get.textTheme.labelSmall!.copyWith(fontSize: 15),
-        ),
-        helper: Text(
-          helper,
-          style: Get.textTheme.labelSmall!.copyWith(fontSize: 15),
-        ),
-      ),
-    );
-  }
+  
 
   Widget _buildJoinToExistedRoomCard() {
     return Card(

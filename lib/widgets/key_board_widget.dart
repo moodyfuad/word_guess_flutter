@@ -80,7 +80,7 @@ class XKeyBoardWidget extends StatelessWidget {
 // }
 
 class XKeyWidget extends StatelessWidget {
-  const XKeyWidget(this.keyLetter, this.primary, this.onTap);
+  const XKeyWidget(this.keyLetter, this.primary, this.onTap, {super.key});
   final String keyLetter;
   final bool primary;
   final void Function(String key) onTap;

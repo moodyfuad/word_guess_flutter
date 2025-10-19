@@ -32,7 +32,7 @@ class XAppColorsLight {
 
   static Color get primary_text => HSLColor.fromAHSL(1, 0, 0, 0.05).toColor();
   static Color get secondary_text => HSLColor.fromAHSL(1, 0, 0, 0.3).toColor();
-  static Color get danger => HSLColor.fromAHSL(1, 9, 0.21, 0.41).toColor();
+  static Color get danger => const Color.fromARGB(255, 244, 33, 33);
 
   static Color get warning => HSLColor.fromAHSL(1, 52, 0.23, 0.34).toColor();
   static Color get success => HSLColor.fromAHSL(1, 147, 0.19, 0.36).toColor();

@@ -1,17 +1,17 @@
 import 'package:get/get.dart';
 import 'package:signalr_core/signalr_core.dart';
 import 'package:word_guess/features/multi_player/dtos/get_online_players_response_dto.dart';
-import 'package:word_guess/features/multi_player/dtos/send_invitation_request_dto.dart';
-import 'package:word_guess/features/multi_player/dtos/send_invitation_response_dto.dart';
-import 'package:word_guess/features/multi_player/models/join_room_response_dto.dart';
+import 'package:word_guess/features/multi_player/dtos/join_room_response_dto.dart';
 import 'package:word_guess/features/multi_player/models/player_model.dart';
+import 'package:word_guess/services/api_constants.dart';
 
 class HubServices extends GetxService {
   HubServices(this.userId, this.name) {
-    // final baseUrl = 'http://guesswordar.runasp.net/hubs/game?userId="$userId"';
-    final baseUrl =
-        'http://192.168.4.97:8080/hubs/game?userId="$userId"&name=$name';
-    _connection = HubConnectionBuilder()
+    baseUrl = '${ApiConstants.baseUrl}hubs/game?userId="$userId"&name=$name';
+    _init();
+  }
+  HubConnection _init() {
+    return _connection = HubConnectionBuilder()
         .withUrl(baseUrl)
         .withAutomaticReconnect()
         .build();
@@ -20,10 +20,16 @@ class HubServices extends GetxService {
   final String userId;
   final String name;
   late String baseUrl;
-  late HubConnection _connection;
+  HubConnection get _connection => _initialized ??= _init();
+  set _connection(HubConnection val) {
+    _initialized = val;
+  }
+
+  HubConnection? _initialized;
   HubConnectionState? get connectionState => _connection.state;
 
   Future<void> start() async {
+    _connection = _init();
     if (_connection.state == HubConnectionState.disconnected) {
       _connection.on(
         'ReceiveOpponentSelectedItsWord',
@@ -42,6 +48,7 @@ class HubServices extends GetxService {
         'OnGetsInvitationResponse',
         _handleOnGetsInvitationResponse,
       );
+      _connection.on('OnInvitationRejected', _handleOnInvitationRejected);
       await _connection.start();
     }
   }
@@ -73,33 +80,24 @@ class HubServices extends GetxService {
     );
   }
 
-  Future<dynamic> createRoom(
-    Map<String, dynamic> createGameRoomRequestDto,
-  ) async {
-    return await _connection.invoke(
-      'CreateRoom',
-      args: <Object>[createGameRoomRequestDto],
-    );
-  }
+  // Future<dynamic> createRoom(
+  //   Map<String, dynamic> createGameRoomRequestDto,
+  // ) async {
+  //   return await _connection.invoke(
+  //     'CreateRoom',
+  //     args: <Object>[createGameRoomRequestDto],
+  //   );
+  // }
 
-  Future<dynamic> joinRoom(Map<String, dynamic> joinGameRequestDto) async {
-    return await _connection.invoke(
-      'JoinRoom',
-      args: <Object>[joinGameRequestDto],
-    );
-  }
+  // Future<dynamic> joinRoom(Map<String, dynamic> joinGameRequestDto) async {
+  //   return await _connection.invoke(
+  //     'JoinRoom',
+  //     args: <Object>[joinGameRequestDto],
+  //   );
+  // }
 
   Future<dynamic> leaveGame() async {
     return await _connection.invoke('LeaveGame', args: <Object>[]);
-  }
-
-  Future<dynamic> GetOnlinePlayers(
-    Map<String, dynamic> GetOnlinePlayersRequestDto,
-  ) async {
-    return await _connection.invoke(
-      'GetOnlinePlayers',
-      args: <Object>[GetOnlinePlayersRequestDto],
-    );
   }
 
   Future<dynamic> invitePlayer(
@@ -132,8 +130,10 @@ class HubServices extends GetxService {
   onReceiveOnlinePlayers;
   void Function(PlayerModel player)? onNewPlayerConnected;
   void Function(PlayerModel player)? onPlayerDisConnected;
-  void Function(PlayerModel player)? onInvitationReceived;
-  void Function(SendInvitationResponseDto response)? onGetsInvitationResponse;
+  void Function(RoomDto room, PlayerModel creator, PlayerModel joiner)?
+  onGetsInvitationResponse;
+  void Function(PlayerModel response)? onInvitationReceived;
+  void Function(String state)? onInvitationRejected;
 
   // private
   void _handleReceiveOpponentSelectedItsWord(List? arguments) {
@@ -198,22 +198,24 @@ class HubServices extends GetxService {
     onInvitationReceived?.call(response);
   }
 
+  void _handleOnInvitationRejected(List? args) {
+    onInvitationRejected?.call(args?[0] as String);
+  }
+
   void _handleOnGetsInvitationResponse(List? args) {
-    var response = SendInvitationResponseDto.fromMap(
-      args![0] as Map<String, dynamic>,
-    );
-    onGetsInvitationResponse?.call(response);
+    final room = RoomDto.fromMap((args as List)[0] as Map<String, dynamic>);
+    final creator = PlayerModel.fromMap((args)[1] as Map<String, dynamic>);
+    final joiner = PlayerModel.fromMap((args)[2] as Map<String, dynamic>);
+    onGetsInvitationResponse?.call(room, creator, joiner);
   }
 
-  @override
-  void onInit() {
-    start();
-    super.onInit();
-  }
+  // @override
+  // void onInit() {
+  //   super.onInit();
+  // }
 
-  @override
-  void onClose() {
-    stop();
-    super.onClose();
-  }
+  // @override
+  // void onClose() {
+  //   super.onClose();
+  // }
 }

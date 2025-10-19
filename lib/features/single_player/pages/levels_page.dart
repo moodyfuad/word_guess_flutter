@@ -102,6 +102,7 @@ class XLevelsPage extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
+                  style: Get.theme.elevatedButtonTheme.style,
                   onPressed: () {
                     final attempts = int.tryParse(attemptsController.text);
 
@@ -115,7 +116,7 @@ class XLevelsPage extends StatelessWidget {
                       Get.toNamed(XRoutes.singlePlayer);
                     }
                   },
-                  child: Text('تاكيد', style: TextStyle(fontSize: 20)),
+                  child: Text('تاكيد', style: Get.textTheme.titleMedium),
                 ),
               ],
             ),

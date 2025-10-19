@@ -27,7 +27,7 @@ class HomePage extends StatelessWidget {
               alignment: AlignmentGeometry.topRight,
 
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 50, 10, 0),
+                padding: const EdgeInsets.fromLTRB(10, 20, 10, 0),
                 child: Column(
                   children: [
                     Row(
@@ -45,6 +45,18 @@ class HomePage extends StatelessWidget {
                             size: 30,
                             color: XAppColorsLight.info,
                           ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        _buildPlayerScore(
+                          'عدد مرات اللعب',
+                          _pageController.playedCount.value,
+                        ),
+                        _buildPlayerScore(
+                          'عدد مرات الفوز',
+                          _pageController.winCount.value,
                         ),
                       ],
                     ),
@@ -120,7 +132,6 @@ class HomePage extends StatelessWidget {
                     ),
                     Obx(
                       () => _HomeButtonWidget(
-                        //todo : un comment this
                         enabled: _pageController.playOnlineSwitch.value,
                         XHomePageStrings.multiPlay.tr,
                         icon: Icons.people,
@@ -139,6 +150,40 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPlayerScore(String title, int playedCount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                title,
+                style: Get.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                playedCount.toString(),
+                style: Get.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -162,11 +207,7 @@ class _HomeButtonWidget extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           disabledBackgroundColor: XAppColorsLight.bg,
         ),
-        //todo : un comment this
-        onPressed:
-            //  enabled ?
-            onPress,
-        // : null,
+        onPressed: enabled ? onPress : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

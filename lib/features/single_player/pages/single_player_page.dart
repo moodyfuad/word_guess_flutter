@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/single_player/controllers/single_player_page_controller.dart';
-import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
-import 'package:word_guess/util/helpers/show_game_rules.dart';
 import 'package:word_guess/util/helpers/helper.dart';
 import 'package:word_guess/widgets/key_board_widget.dart';
 

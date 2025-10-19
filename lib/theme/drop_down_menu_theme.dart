@@ -7,7 +7,7 @@ class XDropDownMenuTheme {
   XDropDownMenuTheme._();
   static DropdownMenuThemeData get light => DropdownMenuThemeData(
     disabledColor: XAppColorsLight.bg_element_container,
-    textStyle: Get.textTheme.bodyMedium,
+    textStyle: ThemeData.light().textTheme.bodyMedium,
 
 
     inputDecorationTheme: XInputDecorationTheme.light,

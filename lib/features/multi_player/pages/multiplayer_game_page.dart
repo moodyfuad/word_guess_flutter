@@ -5,7 +5,6 @@ import 'package:word_guess/features/multi_player/controllers/multiplayer_game_pa
 import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
-import 'package:word_guess/util/helpers/show_game_rules.dart';
 import 'package:word_guess/util/helpers/helper.dart';
 import 'package:word_guess/widgets/key_board_widget.dart';
 
@@ -25,76 +24,85 @@ class MultiplayerGamePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl, // RTL for Arabic layout
-      child: Scaffold(
-        backgroundColor: Colors.grey[100],
-        appBar: AppBar(
-          title: GestureDetector(
-            // onTap: _controller.addAttempt,
-            child: Text(
-              XHomePageStrings.appName.tr,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          return;
+        }
+        _controller.handelPop();
+      },
+      child: Directionality(
+        textDirection: TextDirection.rtl, // RTL for Arabic layout
+        child: Scaffold(
+          backgroundColor: Colors.grey[100],
+          appBar: AppBar(
+            title: GestureDetector(
+              // onTap: _controller.addAttempt,
+              child: Text(
+                XHomePageStrings.appName.tr,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              ),
             ),
+            centerTitle: true,
+
+            actions: [
+              IconButton(
+                onPressed: Helper.showGameRoles,
+                icon: Icon(Icons.info_outline),
+              ),
+            ],
           ),
-          centerTitle: true,
+          body: SafeArea(
+            minimum: EdgeInsets.symmetric(horizontal: 10),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: Get.size.height),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    'اخر لعبة ل${_controller.opponentName}',
+                    style: Get.textTheme.labelMedium,
+                  ),
+                  GetBuilder<MultiplayerGamePageController>(
+                    builder: (_) {
+                      return _buildWordRow(_controller.opponentGuessWord.value);
+                    },
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: CarouselView.weighted(
+                      // mainAxisSize: MainAxisSize.max,
+                      // mainAxisAlignment: MainAxisAlignment.end,
+                      controller: _controller.carouselController,
+                      scrollDirection: Axis.vertical,
 
-          actions: [
-            IconButton(
-              onPressed: Helper.showGameRoles,
-              icon: Icon(Icons.info_outline),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          minimum: EdgeInsets.symmetric(horizontal: 10),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: Get.size.height),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  'اخر لعبة ل${_controller.opponentName}',
-                  style: Get.textTheme.labelMedium,
-                ),
-                GetBuilder<MultiplayerGamePageController>(
-                  builder: (_) {
-                    return _buildWordRow(_controller.opponentGuessWord.value);
-                  },
-                ),
-                Expanded(
-                  flex: 2,
-                  child: CarouselView.weighted(
-                    // mainAxisSize: MainAxisSize.max,
-                    // mainAxisAlignment: MainAxisAlignment.end,
-                    controller: _controller.carouselController,
-                    scrollDirection: Axis.vertical,
+                      // itemExtent: 100,
+                      onTap: _controller.carouselController.animateToItem,
+                      padding: EdgeInsets.all(5),
+                      flexWeights: [2, 3, 4, 4, 5, 4, 4, 3, 2],
+                      shrinkExtent: 10,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusGeometry.circular(8),
+                      ),
 
-                    // itemExtent: 100,
-                    onTap: _controller.carouselController.animateToItem,
-                    padding: EdgeInsets.all(5),
-                    flexWeights: [2, 3, 4, 4, 5, 4, 4, 3, 2],
-                    shrinkExtent: 10,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(8),
+                      children: _controller.board.map((word) {
+                        return _buildWordRow(word);
+                      }).toList(),
                     ),
-
-                    children: _controller.board.map((word) {
-                      return _buildWordRow(word);
-                    }).toList(),
                   ),
-                ),
 
-                Expanded(
-                  flex: 1,
-                  child: XKeyBoardWidget(
-                    onKeyTap: _controller.onKeyTap,
-                    onSummitTap: _controller.onSubmitPressed,
-                    onBackspaceTap: _controller.onBackspacePressed,
+                  Expanded(
+                    flex: 1,
+                    child: XKeyBoardWidget(
+                      onKeyTap: _controller.onKeyTap,
+                      onSummitTap: _controller.onSubmitPressed,
+                      onBackspaceTap: _controller.onBackspacePressed,
+                    ),
                   ),
-                ),
-                SizedBox(height: 50),
-              ],
+                  SizedBox(height: 50),
+                ],
+              ),
             ),
           ),
         ),
