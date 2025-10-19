@@ -4,6 +4,6 @@ import 'package:word_guess/features/multi_player/controllers/multiplayer_options
 class XMultiplayerOptionsPageBindings extends Bindings {
   @override
   void dependencies() {
-    Get.put(XMultiplayerOptionsPageController());
+    Get.put(MultiplayerOptionsPageController());
   }
 }

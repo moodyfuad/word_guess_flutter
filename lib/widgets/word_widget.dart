@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:word_guess/features/single_player/models/letter_model.dart';
+import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 
 class XWordWidget extends StatefulWidget {
   const XWordWidget({super.key, required this.word});
-  final XWordModel word;
+  final WordModel word;
   @override
   State<XWordWidget> createState() => _XWordWidgetState();
 }
 
 class _XWordWidgetState extends State<XWordWidget> {
-  void updateLetter(int index, XLetterModel letter) {
+  void updateLetter(int index, LetterModel letter) {
     setState(() {
       widget.word.letters[index] = letter;
     });

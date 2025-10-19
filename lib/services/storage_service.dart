@@ -6,7 +6,7 @@ class StorageService extends GetxService {
   late final GetStorage _box;
   Future<StorageService> init() async {
     _box = GetStorage();
-    if (playerId == null) {
+    if (_box.read<String>(_playerIdKey) == null) {
       await updatePlayerId(UuidV4().generate().toString());
     } else {}
     return this;
@@ -21,8 +21,8 @@ class StorageService extends GetxService {
   static const _playerNameKey = 'playerName';
   static const _playerIdKey = 'playerId';
 
-  String? get playerName => _box.read<String>(_playerNameKey);
-  String? get playerId => _box.read<String>(_playerIdKey);
+  String get playerName => _box.read<String>(_playerNameKey) ?? '';
+  String get playerId => _box.read<String>(_playerIdKey)!;
 
   Future<void> updatePlayerName(String name) async {
     await _box.write(_playerNameKey, name);

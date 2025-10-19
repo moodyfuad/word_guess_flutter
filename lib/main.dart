@@ -15,9 +15,9 @@ void main() async {
   await Get.putAsync(() async => await NetworkService().init());
   await GetStorage.init();
   Get.put(StorageService());
-  final id = Get.find<StorageService>().playerId;
+  final storage = Get.find<StorageService>();
 
-  Get.put(XHubServices(id!));
+  Get.put(HubServices(storage.playerId,storage.playerName));
 
   runApp(const MyApp());
 }

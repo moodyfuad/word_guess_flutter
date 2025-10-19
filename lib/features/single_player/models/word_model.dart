@@ -1,30 +1,31 @@
-import 'dart:convert';
+import 'package:word_guess/features/single_player/models/letter_model.dart';
+import 'package:word_guess/features/single_player/models/letter_states.dart';
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-class XWordModel {
+class WordModel {
+  WordModel({required this.letters});
+
   String get value => letters.fold(
     '',
     (previousValue, element) => previousValue + element.letter,
   );
   int get length => letters.length;
-  final List<XLetterModel> letters;
+  final List<LetterModel> letters;
 
-  XWordModel({required this.letters});
-
-  factory XWordModel.generate(int length) {
-    return XWordModel(
+  factory WordModel.generate(int length) {
+    return WordModel(
       letters: List.generate(
         length,
         (index) =>
-            XLetterModel(letter: '', index: index, state: XLetterStates.empty),
+            LetterModel(letter: '', index: index, state: XLetterStates.empty),
       ),
     );
   }
-  factory XWordModel.fromString(String word) {
-    return XWordModel(
+  factory WordModel.fromString(String word) {
+    return WordModel(
       letters: List.generate(
         word.length,
-        (index) => XLetterModel(
+        (index) => LetterModel(
           letter: word[index],
           index: index,
           state: XLetterStates.none,
@@ -34,59 +35,16 @@ class XWordModel {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'letters': letters.map((x) => x.toMap()).toList(),
-    };
+    return <String, dynamic>{'letters': letters.map((x) => x.toMap()).toList()};
   }
 
-  factory XWordModel.fromMap(Map<String, dynamic> map) {
-    return XWordModel(
-      letters: List<XLetterModel>.from((map['letters'] as List<int>).map<XLetterModel>((x) => XLetterModel.fromMap(x as Map<String,dynamic>),),),
+  factory WordModel.fromMap(Map<String, dynamic> map) {
+    return WordModel(
+      letters: List<LetterModel>.from(
+        (map['letters'] as List<int>).map<LetterModel>(
+          (x) => LetterModel.fromMap(x as Map<String, dynamic>),
+        ),
+      ),
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory XWordModel.fromJson(String source) => XWordModel.fromMap(json.decode(source) as Map<String, dynamic>);
-}
-
-class XLetterModel {
-  final String letter;
-  final int index;
-  String state;
-  XLetterModel({
-    required this.letter,
-    required this.index,
-    required this.state,
-  });
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'letter': letter,
-      'index': index,
-      'state': state,
-    };
-  }
-
-  factory XLetterModel.fromMap(Map<String, dynamic> map) {
-    return XLetterModel(
-      letter: map['letter'] as String,
-      index: map['index'] as int,
-      state:map['state'] as String
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory XLetterModel.fromJson(String source) =>
-      XLetterModel.fromMap(json.decode(source) as Map<String, dynamic>);
-}
-
-class XLetterStates {
-  static const String correct = 'Correct';
-
-  static const String present = 'present';
-  static const String absent = 'absent';
-  static const String none = 'none';
-  static const String empty = 'empty';
 }

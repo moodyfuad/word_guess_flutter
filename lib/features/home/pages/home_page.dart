@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:word_guess/home_page_controller.dart';
+import 'package:word_guess/features/home/controllers/home_page_controller.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/theme/app_colors.dart';
-import 'package:word_guess/util/show_game_rules.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 
-class XHomePage extends StatelessWidget {
-  XHomePage({super.key});
+class HomePage extends StatelessWidget {
+  HomePage({super.key});
   final _pageController = Get.find<HomePageController>();
 
   @override
@@ -120,6 +120,7 @@ class XHomePage extends StatelessWidget {
                     ),
                     Obx(
                       () => _HomeButtonWidget(
+                        //todo : un comment this
                         enabled: _pageController.playOnlineSwitch.value,
                         XHomePageStrings.multiPlay.tr,
                         icon: Icons.people,
@@ -129,7 +130,7 @@ class XHomePage extends StatelessWidget {
                     _HomeButtonWidget(
                       XHomePageStrings.gameRoles.tr,
                       icon: Icons.info_outline,
-                      onPress: showGameRules,
+                      onPress: Helper.showGameRoles,
                     ),
                   ],
                 ),
@@ -161,7 +162,11 @@ class _HomeButtonWidget extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           disabledBackgroundColor: XAppColorsLight.bg,
         ),
-        onPressed: enabled ? onPress : null,
+        //todo : un comment this
+        onPressed:
+            //  enabled ?
+            onPress,
+        // : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

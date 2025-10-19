@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/multi_player/controllers/multiplayer_game_page_controller.dart';
+import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
-import 'package:word_guess/util/show_game_rules.dart';
+import 'package:word_guess/util/helpers/show_game_rules.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 import 'package:word_guess/widgets/key_board_widget.dart';
 
 class MultiplayerGamePage extends StatelessWidget {
@@ -39,7 +41,7 @@ class MultiplayerGamePage extends StatelessWidget {
 
           actions: [
             IconButton(
-              onPressed: showGameRules,
+              onPressed: Helper.showGameRoles,
               icon: Icon(Icons.info_outline),
             ),
           ],
@@ -100,7 +102,7 @@ class MultiplayerGamePage extends StatelessWidget {
     );
   }
 
-  Widget _buildWordRow(XWordModel word) {
+  Widget _buildWordRow(WordModel word) {
     return GetBuilder<MultiplayerGamePageController>(
       initState: (_) {},
       builder: (_) {

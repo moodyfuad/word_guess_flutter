@@ -2,26 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/single_player/controllers/single_player_page_controller.dart';
+import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
-import 'package:word_guess/util/show_game_rules.dart';
+import 'package:word_guess/util/helpers/show_game_rules.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 import 'package:word_guess/widgets/key_board_widget.dart';
 
 class XSinglePlayerPage extends StatelessWidget {
   final _controller = Get.find<XSinglePlayerPageController>();
 
   XSinglePlayerPage({super.key});
-
-  Color? _getCellColor(String state) {
-    return switch (state) {
-      XLetterStates.correct => Colors.green,
-      XLetterStates.present => Colors.amberAccent,
-      XLetterStates.absent => Colors.blueGrey,
-      XLetterStates.none => Colors.blue[100],
-      XLetterStates.empty => Colors.white,
-      _ => Colors.black,
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +35,7 @@ class XSinglePlayerPage extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              onPressed: showGameRules,
+              onPressed: Helper.showGameRoles,
               icon: Icon(Icons.info_outline),
             ),
           ],
@@ -59,8 +50,6 @@ class XSinglePlayerPage extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: CarouselView.weighted(
-                    // mainAxisSize: MainAxisSize.max,
-                    // mainAxisAlignment: MainAxisAlignment.end,
                     controller: _controller.carouselController,
                     scrollDirection: Axis.vertical,
 
@@ -96,7 +85,7 @@ class XSinglePlayerPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWordRow(XWordModel word) {
+  Widget _buildWordRow(WordModel word) {
     return GetBuilder<XSinglePlayerPageController>(
       init: XSinglePlayerPageController(),
       initState: (_) {},
@@ -113,7 +102,7 @@ class XSinglePlayerPage extends StatelessWidget {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: Colors.grey),
-                              color: _getCellColor(letter.state),
+                              color: Helper.getLetterColorByState(letter.state),
                             ),
                             child: Center(
                               child: FittedBox(

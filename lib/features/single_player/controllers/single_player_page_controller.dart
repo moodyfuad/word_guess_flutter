@@ -1,22 +1,25 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:word_guess/features/single_player/models/letter_model.dart';
+import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/levels.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 
 class XSinglePlayerPageController extends GetxController {
   String selectedWord = '';
-  final RxList<XWordModel> board = <XWordModel>[].obs;
-
-  RxInt currentRow = 0.obs;
-  RxInt currentCol = 0.obs;
+  //Vars
+  final RxList<WordModel> board = <WordModel>[].obs;
+  final RxInt currentRow = 0.obs;
+  final RxInt currentCol = 0.obs;
   final carouselController = CarouselController(initialItem: 0);
-
+  // Getters
   int get attempts => board.length;
   int get wordLength => selectedWord.length;
-  XLetterModel get currentLetter =>
+  LetterModel get currentLetter =>
       board[currentRow.value].letters[currentCol.value];
 
+  // public methods
   void replay() {
     currentCol.value = 0;
     currentRow.value = 0;
@@ -24,7 +27,7 @@ class XSinglePlayerPageController extends GetxController {
   }
 
   void addAttempt([int length = 1]) {
-    final words = List.generate(length, (_) => XWordModel.generate(wordLength));
+    final words = List.generate(length, (_) => WordModel.generate(wordLength));
     for (var w in words) {
       for (var letter in w.letters) {
         final previousLetter =
@@ -58,7 +61,7 @@ class XSinglePlayerPageController extends GetxController {
         });
     board.value = List.generate(
       attempts,
-      (_) => XWordModel.generate(wordLength),
+      (_) => WordModel.generate(wordLength),
     );
     update();
   }
@@ -78,7 +81,7 @@ class XSinglePlayerPageController extends GetxController {
     } else {
       carouselController.animateToItem(currentRow.value);
       if (currentCol.value < wordLength) {
-        board[currentRow.value].letters[currentCol.value] = XLetterModel(
+        board[currentRow.value].letters[currentCol.value] = LetterModel(
           letter: key,
           state: XLetterStates.none,
           index: currentCol.value,
@@ -111,7 +114,7 @@ class XSinglePlayerPageController extends GetxController {
         onBackspacePressed();
         return;
       } else {
-        board[currentRow.value].letters[currentCol.value] = XLetterModel(
+        board[currentRow.value].letters[currentCol.value] = LetterModel(
           letter: '',
           state: XLetterStates.empty,
           index: currentCol.value,
@@ -122,6 +125,14 @@ class XSinglePlayerPageController extends GetxController {
     update();
   }
 
+  // overrides
+  @override
+  void onInit() {
+    super.onInit();
+    startGame();
+  }
+
+  // private methods
   bool _isSubmitAllowed() {
     final noEmptyCell = board[currentRow.value].letters.every(
       (letter) => letter.state != XLetterStates.empty,
@@ -133,8 +144,8 @@ class XSinglePlayerPageController extends GetxController {
     }
   }
 
-  List<XLetterModel> _validateRow(List<XLetterModel> letters) {
-    final List<XLetterModel> modified = [];
+  List<LetterModel> _validateRow(List<LetterModel> letters) {
+    final List<LetterModel> modified = [];
     for (var element in letters) {
       if (selectedWord.contains(element.letter)) {
         element.state = XLetterStates.present;
@@ -162,12 +173,6 @@ class XSinglePlayerPageController extends GetxController {
     }
   }
 
-  @override
-  void onInit() {
-    super.onInit();
-    startGame();
-  }
-
   void _placeCorrectCharsAtNextRow() {
     if (board[currentRow.value].letters.every(
       (letter) => letter.state == XLetterStates.correct,
@@ -183,7 +188,7 @@ class XSinglePlayerPageController extends GetxController {
   }
 }
 
-List<String> arabicWords6 = [
+const List<String> arabicWords6 = [
   'بيت',
   'باب',
   'شمس',

@@ -4,20 +4,26 @@ import 'package:get/get.dart';
 import 'package:word_guess/features/multi_player/models/create_game_room_request_dto.dart';
 import 'package:word_guess/features/multi_player/models/join_game_request_Dto.dart';
 import 'package:word_guess/features/multi_player/models/join_room_response_dto.dart';
+import 'package:word_guess/features/multi_player/models/player_model.dart';
 import 'package:word_guess/services/storage_service.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/services/hub_services.dart';
 
-class XMultiplayerOptionsPageController extends GetxController {
+class MultiplayerOptionsPageController extends GetxController {
+  // Rx
   final RxString key = ''.obs;
-  RoomResponseDto? room;
-  final XHubServices hubServices = Get.find<XHubServices>();
+  RoomDto? room;
+  PlayerModel? opponent;
+  PlayerModel? me;
+  // services
+  final HubServices hubServices = Get.find<HubServices>();
   final StorageService storage = Get.find<StorageService>();
+  // controllers
   final maxAttemptsController = TextEditingController();
   final wordLengthController = TextEditingController();
-
   final nameController = TextEditingController();
   final keyController = TextEditingController();
+
   void enableEditRoom() {
     key.value = '';
     update();
@@ -32,7 +38,7 @@ class XMultiplayerOptionsPageController extends GetxController {
       maxAttempts: mayAttempts,
       wordLength: wordLength,
     );
-    hubServices.connection.invoke('CreateRoom', args: <Object>[params.toMap()]);
+    hubServices.createRoom(params.toMap());
   }
 
   void joinRoom() {
@@ -41,59 +47,54 @@ class XMultiplayerOptionsPageController extends GetxController {
       JoinerId: storage.playerId!,
       JoinerName: storage.playerName,
     );
-    hubServices.connection.invoke('JoinRoom', args: <Object>[params.toMap()]);
-  }
-
-  Future<void> _handleReceiveGameRoomCreated(
-    dynamic createGameRoomRequestDto,
-  ) async {
-    final list = createGameRoomRequestDto as List;
-    final decoded = list.first;
-    var dto = RoomResponseDto.fromMap(decoded as Map<String, dynamic>);
-    Get.snackbar(
-      'تم انشاء الغرفة',
-      'لقد قام ${dto.creator.name} بانشاء غرفة للعب',
-    );
-    key.value = dto.key;
-    room = dto;
-    update();
-  }
-
-  _handleReceiveGameRoomJoined(dynamic joinGameRequestDto) {
-    final res = RoomResponseDto.fromMap(
-      (joinGameRequestDto as List).first as Map<String, dynamic>,
-    );
-    key.value = res.key;
-
-    Get.snackbar(
-      'تم الانضمام',
-      'تم الانضمام الى غرفة ${res.creator.name} بنجاح',
-    );
-    room = res;
-    update();
-
-    Get.toNamed(XRoutes.selectWord);
+    hubServices.joinRoom(params.toMap());
   }
 
   @override
   void onInit() {
-    hubServices.connection.on(
-      'ReceiveGameRoomCreated',
-      (arg) => _handleReceiveGameRoomCreated(arg),
-    );
-    hubServices.connection.on(
-      'ReceiveGameRoomJoined',
-      (arg) => _handleReceiveGameRoomJoined(arg),
-    );
-    hubServices.start();
+    hubServices.onOpponentLeaveGame = _showOpponentDisconnectedSnackbar;
+    hubServices.onReceiveGameRoomCreated = (room) {
+      Get.snackbar('تم انشاء الغرفة', 'لقد قامت بانشاء غرفة للعب');
+      key.value = room.key;
+      room = room;
+      update();
+    };
+    hubServices.onReceiveGameRoomJoined = (room, creator, joiner) {
+      key.value = room.key;
+      opponent = (storage.playerId == creator.id) ? joiner : creator;
+      me = (storage.playerId != creator.id) ? joiner : creator;
+
+      Get.snackbar(
+        'تم الانضمام',
+        'تم الانضمام الى غرفة ${opponent?.name} بنجاح',
+      );
+      this.room = room;
+
+      update();
+
+      Get.toNamed(XRoutes.selectWord);
+    };
     super.onInit();
   }
 
   @override
   void dispose() {
-    hubServices.connection.off('ReceiveGameRoomCreated');
-    hubServices.connection.off('ReceiveGameRoomJoined');
-    hubServices.connection.stop();
+    maxAttemptsController.dispose();
+    wordLengthController.dispose();
+    nameController.dispose();
+    keyController.dispose();
     super.dispose();
+  }
+
+  //private
+  _showOpponentDisconnectedSnackbar() {
+    Get.snackbar(
+      'انقطع الاتصال عند الخصم',
+      'انتظر 20 ثانية ليتم احتساب فوزك بشكل تلقائي',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red.withValues(alpha: 0.8),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
   }
 }

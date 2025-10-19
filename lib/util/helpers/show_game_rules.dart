@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/widgets/word_widget.dart';
 
-void showGameRules() {
+void showGameRulesImp() {
   final textStyle = Get.textTheme.bodyMedium;
   final double dividerHeight = 15;
   Get.defaultDialog(
@@ -46,7 +46,7 @@ void showGameRules() {
             textAlign: TextAlign.center,
           ),
         ),
-      ]
+      ],
     ),
     confirm: ElevatedButton.icon(
       label: Text('تمام'),
@@ -56,19 +56,19 @@ void showGameRules() {
   );
 }
 
-XWordModel _getWordForInfo(String state) {
-  XWordModel word = XWordModel.fromString('يأكل');
+WordModel _getWordForInfo(String state) {
+  WordModel word = WordModel.fromString('يأكل');
   if (state == XLetterStates.absent) {
     for (var l in word.letters) {
       l.state = XLetterStates.absent;
     }
     return word;
   } else if (state == XLetterStates.correct) {
-    word = XWordModel.fromString('محمد');
+    word = WordModel.fromString('محمد');
     word.letters[2].state = XLetterStates.correct;
     return word;
   } else if (state == XLetterStates.present) {
-    word = XWordModel.fromString('اكرم');
+    word = WordModel.fromString('اكرم');
     word.letters[1].state = XLetterStates.present;
     return word;
   }

@@ -132,11 +132,11 @@ class XSelectWordPage extends StatelessWidget {
             _buildRoleWidget("حالة الغرفة", '${_controller.room?.state.tr}'),
             _buildRoleWidget(
               "منشئ الغرفة",
-              '${_controller.room?.creator.name}',
+              '${_controller.creator.name}',
             ),
             _buildRoleWidget(
               "المنضم للغرفة",
-              '${_controller.room?.joiner?.name}',
+              '${_controller.joiner?.name}',
             ),
           ],
         ),

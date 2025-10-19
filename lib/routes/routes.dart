@@ -6,4 +6,5 @@ class XRoutes {
   static String multiplayerOptions = '/multiplayerOptions';
   static const selectWord = '/selectWord';
   static const multiplayerGame = '/multiplayerGame';
+  static const discoverPlayers = '/discoverPlayers';
 }
