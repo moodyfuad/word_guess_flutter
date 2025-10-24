@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -13,7 +15,9 @@ import 'package:word_guess/services/network_services.dart';
 import 'package:word_guess/theme/app_theme.dart';
 
 void main() async {
+  
   WidgetsFlutterBinding.ensureInitialized();
+
   await Get.putAsync(() async => await NetworkService().init());
   await GetStorage.init();
   Get.put(StorageService(), permanent: true);
@@ -45,6 +49,7 @@ class MyApp extends StatelessWidget {
       theme: XAppTheme.light,
       darkTheme: XAppTheme.dark,
       themeMode: ThemeMode.light,
+      enableLog: true,
     );
   }
 }

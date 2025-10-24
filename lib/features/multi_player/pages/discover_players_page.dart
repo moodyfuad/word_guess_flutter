@@ -20,7 +20,8 @@ class DiscoverPlayersPage extends StatelessWidget {
           itemBuilder: (context, index) {
             return _UserCard(
               name: players[index].name,
-              description: 'لعب اكثر من ${players[index].playCount} مرة',
+              description:
+                  'لعب ${players[index].playCount} و فاز ${players[index].winCount}',
               onButtonPress: () {
                 _controller.sendInvitation(players[index].id);
               },
@@ -34,7 +35,6 @@ class DiscoverPlayersPage extends StatelessWidget {
 
 class _UserCard extends StatelessWidget {
   const _UserCard({
-    super.key,
     this.avatar,
     required this.name,
     required this.description,
@@ -47,6 +47,7 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      key: key,
       child: Padding(
         padding: EdgeInsets.all(10),
         child: Row(
@@ -67,7 +68,7 @@ class _UserCard extends StatelessWidget {
             Spacer(),
             ElevatedButton(
               onPressed: onButtonPress,
-              child: Text('ارسال\nدعوة'),
+              child: Text('ارسال\nدعوة', style: Get.textTheme.titleSmall),
             ),
           ],
         ),

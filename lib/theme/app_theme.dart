@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:word_guess/theme/app_colors.dart';
 import 'package:word_guess/theme/card_theme.dart';
 import 'package:word_guess/theme/drop_down_menu_theme.dart';

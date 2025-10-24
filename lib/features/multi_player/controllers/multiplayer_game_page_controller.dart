@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:word_guess/features/multi_player/controllers/multiplayer_options_page_controller.dart';
 import 'package:word_guess/features/multi_player/controllers/room_controller.dart';
 import 'package:word_guess/features/multi_player/dtos/send_guess_request_dto.dart';
 import 'package:word_guess/features/single_player/models/letter_model.dart';
@@ -37,7 +36,6 @@ class MultiplayerGamePageController extends GetxController {
   int get wordLength => room?.wordLength ?? 0;
   LetterModel get _currentLetter => board[_currentRow].letters[_currentCol];
   final _storage = Get.find<StorageService>();
-  //!
   get room => _options.room;
   // final _options = Get.find<MultiplayerOptionsPageController>();
   final _options = Get.find<RoomController>();
@@ -196,8 +194,11 @@ class MultiplayerGamePageController extends GetxController {
     }
   }
 
-  _leaveGame() {
-    _hub.leaveGame();
+  _leaveGame() async {
+    await _api.post(
+      'room/leaveGame',
+      data: {'roomKey': room?.key, 'playerId': _storage.playerId},
+    );
   }
 
   handelPop() async {
@@ -209,6 +210,7 @@ class MultiplayerGamePageController extends GetxController {
     if (d) {
       //todo: update the score
       _storage.increasePlayedCount();
+      await _leaveGame();
       //todo: send leave game to the opponent
       Get.until(
         (route) => ![
@@ -225,6 +227,7 @@ class MultiplayerGamePageController extends GetxController {
     startGame();
     opponentGuessWord.value = WordModel.generate(room?.wordLength ?? 0);
     _hub.onReceiveOpponentGuess = _handelReceiveOpponentGuess;
+    _hub.onOpponentLeftGame = _handleOpponentLeftGame;
     super.onInit();
   }
 
@@ -325,5 +328,16 @@ class MultiplayerGamePageController extends GetxController {
         return Future.value(true);
       },
     );
+  }
+
+  void _handleOpponentLeftGame() {
+    Get.snackbar(
+      'انقطع الاتصال عند الخصم',
+      'تم احتساب فوزك بشكل تلقائي',
+      barBlur: 0.1,
+      overlayBlur: 0.1,
+      duration: 5.seconds.abs(),
+    );
+    _showWinDialog();
   }
 }

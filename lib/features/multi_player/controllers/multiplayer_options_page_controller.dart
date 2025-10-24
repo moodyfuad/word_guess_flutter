@@ -4,26 +4,21 @@ import 'package:word_guess/features/multi_player/controllers/room_controller.dar
 import 'package:word_guess/features/multi_player/dtos/create_game_room_request_dto.dart';
 import 'package:word_guess/features/multi_player/dtos/join_game_request_Dto.dart';
 import 'package:word_guess/features/multi_player/dtos/join_room_response_dto.dart';
-import 'package:word_guess/features/multi_player/models/player_model.dart';
 import 'package:word_guess/services/api_service.dart';
 import 'package:word_guess/services/storage_service.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/services/hub_services.dart';
-import 'package:word_guess/util/helpers/helper.dart';
 
 class MultiplayerOptionsPageController extends GetxController {
   // Rx
   final RxString key = ''.obs;
   //
-  final roomController = Get.find<RoomController>();
-  // RoomDto? room;
-  // PlayerModel? opponent;
-  // PlayerModel? me;
   // services
   final HubServices _hubServices = Get.find<HubServices>();
   final StorageService _storage = Get.find<StorageService>();
   final ApiService _api = Get.find<ApiService>();
   // controllers
+  final roomController = Get.find<RoomController>();
   final maxAttemptsController = TextEditingController();
   final wordLengthController = TextEditingController();
   final nameController = TextEditingController();

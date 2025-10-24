@@ -28,19 +28,23 @@ class DiscoverPlayersController extends GetxController {
       fromPlayerId: _storage.playerId,
       wordLength: wordLength,
     ).toMap();
+
     await _api.post('player/invite', data: data);
   }
 
   getPlayers() async {
     final map = GetOnlinePlayersRequestDto(pageNumber: 1, pageSize: 10).toMap();
-    final response = (await _api.get(
-      'players',
-      body: map,
-      fromJsonT: (map) => GetOnlinePlayersResponseDto.fromMap(map),
-    )).data;
+    try {
+      final response = (await _api.get('players',
+        body: map,
+        fromJsonT: (map) => GetOnlinePlayersResponseDto.fromMap(map),
+      )).data;
 
-    players.value = response?.players ?? [];
-    players.removeWhere((p) => p.id == _storage.playerId);
+      players.value = response?.players ?? [];
+      players.removeWhere((p) => p.id == _storage.playerId);
+    } on Exception catch (e) {
+      ApiService.handleApiError(e);
+    }
   }
 
   //overrides

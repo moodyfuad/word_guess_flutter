@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:signalr_core/signalr_core.dart';
-import 'package:word_guess/features/multi_player/controllers/multiplayer_options_page_controller.dart';
 import 'package:word_guess/features/multi_player/controllers/room_controller.dart';
 import 'package:word_guess/features/multi_player/dtos/join_room_response_dto.dart';
 import 'package:word_guess/features/multi_player/dtos/send_invitation_response_dto.dart';
@@ -154,13 +153,7 @@ class HomePageController extends GetxController {
             state: InvitationStates.accepted,
           ).toMap();
           _api.post('player/invite/response', data: res);
-          // hub.responseToInvitation(
-          //   SendInvitationResponseDto(
-          //     toPlayerId: player.id,
-          //     fromPlayerId: storage.playerId,
-          //     state: InvitationStates.accepted,
-          //   ).toMap(),
-          // );
+
           Get.back();
         },
         child: Text('موافقة'),
@@ -187,7 +180,7 @@ class HomePageController extends GetxController {
   ) async {
     // this.room.value = room;
     final invitedPlayer = (_storage.playerId == creator.id) ? joiner : creator;
-    final me = (_storage.playerId != creator.id) ? joiner : creator;
+    final me = (_storage.playerId == joiner.id) ? joiner : creator;
 
     Get.snackbar(
       'تم الانضمام',

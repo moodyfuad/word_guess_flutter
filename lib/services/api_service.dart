@@ -296,4 +296,19 @@ class ApiService extends GetxService {
       throw ApiException(e.toString());
     }
   }
+
+  static void handleApiError(Exception error) {
+    String message;
+    message = switch (error) {
+      NetworkException e => e.toString(),
+      ApiException e => e.toString(),
+      _ => 'An unexpected error occurred',
+    };
+    Get.defaultDialog(
+      title: 'Error',
+      middleText: message,
+      textConfirm: 'OK',
+      onConfirm: () => Get.back(),
+    );
+  }
 }

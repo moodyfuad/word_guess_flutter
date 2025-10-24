@@ -49,6 +49,7 @@ class HubServices extends GetxService {
         _handleOnGetsInvitationResponse,
       );
       _connection.on('OnInvitationRejected', _handleOnInvitationRejected);
+      _connection.on('ReceiveOpponentLeftGame', _handleReceiveOpponentLeftGame);
       await _connection.start();
     }
   }
@@ -64,60 +65,6 @@ class HubServices extends GetxService {
     _connection.off('OnNewPlayerConnected');
     await _connection.stop();
   }
-
-  // invokes
-  Future<dynamic> sendWord(Map<String, dynamic> selectWordRequestDto) async {
-    return await _connection.invoke(
-      'SelectWord',
-      args: <Object>[selectWordRequestDto],
-    );
-  }
-
-  Future<dynamic> sendMyGuess(String playerId, String word) async {
-    return await _connection.invoke(
-      'SendMyGuess',
-      args: <Object>[playerId, word],
-    );
-  }
-
-  // Future<dynamic> createRoom(
-  //   Map<String, dynamic> createGameRoomRequestDto,
-  // ) async {
-  //   return await _connection.invoke(
-  //     'CreateRoom',
-  //     args: <Object>[createGameRoomRequestDto],
-  //   );
-  // }
-
-  // Future<dynamic> joinRoom(Map<String, dynamic> joinGameRequestDto) async {
-  //   return await _connection.invoke(
-  //     'JoinRoom',
-  //     args: <Object>[joinGameRequestDto],
-  //   );
-  // }
-
-  Future<dynamic> leaveGame() async {
-    return await _connection.invoke('LeaveGame', args: <Object>[]);
-  }
-
-  Future<dynamic> invitePlayer(
-    Map<String, dynamic> sendInvitationRequestDto,
-  ) async {
-    return await _connection.invoke(
-      'InvitePlayer',
-      args: <Object>[sendInvitationRequestDto],
-    );
-  }
-
-  Future<dynamic> responseToInvitation(
-    Map<String, dynamic> sendInvitationResponseDto,
-  ) async {
-    return await _connection.invoke(
-      'ResponseToInvitation',
-      args: <Object>[sendInvitationResponseDto],
-    );
-  }
-
   // handlers
   void Function(String playerId, String word)? onReceiveOpponentSelectedItsWord;
   void Function(String playerId, String word)? onReceiveOpponentGuess;
@@ -134,6 +81,7 @@ class HubServices extends GetxService {
   onGetsInvitationResponse;
   void Function(PlayerModel response)? onInvitationReceived;
   void Function(String state)? onInvitationRejected;
+  void Function()? onOpponentLeftGame;
 
   // private
   void _handleReceiveOpponentSelectedItsWord(List? arguments) {
@@ -207,6 +155,9 @@ class HubServices extends GetxService {
     final creator = PlayerModel.fromMap((args)[1] as Map<String, dynamic>);
     final joiner = PlayerModel.fromMap((args)[2] as Map<String, dynamic>);
     onGetsInvitationResponse?.call(room, creator, joiner);
+  }
+  void _handleReceiveOpponentLeftGame(List? args) {
+    onOpponentLeftGame?.call();
   }
 
   // @override

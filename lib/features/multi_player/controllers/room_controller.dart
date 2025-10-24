@@ -9,4 +9,7 @@ class RoomController extends GetxController {
 
   PlayerModel get creator => me?.id == room?.creatorId ? me! : opponent!;
   PlayerModel get joiner => me?.id == room?.joinerId ? me! : opponent!;
+  set creator(PlayerModel v) =>
+      me?.id == room?.creatorId ? me = v : opponent = v;
+  set joiner(PlayerModel v) => me?.id == room?.joinerId ? me = v : opponent = v;
 }

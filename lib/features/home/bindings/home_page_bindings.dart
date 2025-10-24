@@ -8,7 +8,7 @@ import 'package:word_guess/services/storage_service.dart';
 class HomePageBinding implements Bindings {
   @override
   void dependencies() {
-    Get.put(MultiplayerOptionsPageController(), permanent: true);
+    Get.put(MultiplayerOptionsPageController());
     Get.lazyPut<HomePageController>(
       () => HomePageController(
         hub: Get.find<HubServices>(),

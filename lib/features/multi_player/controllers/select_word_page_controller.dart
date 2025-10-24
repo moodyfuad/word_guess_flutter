@@ -21,7 +21,7 @@ class XSelectWordPageController extends GetxController {
   final storage = Get.find<StorageService>();
   // final _options = Get.find<RoomController>();
   // getters
-  RoomController get roomController => Get.find<RoomController>();
+  final roomController = Get.find<RoomController>();
   RoomDto get room => roomController.room!;
   // PlayerModel get creator =>
   //     room.creatorId == _options.me!.id ? _options.me! : _options.opponent!;
@@ -53,7 +53,7 @@ class XSelectWordPageController extends GetxController {
       );
 
       final response = await api.post('room/submitWord', data: dto.toMap());
-
+      
       setMyWord();
       isMyWordSelected.value = response.success;
       //todo: stop the timer

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:word_guess/theme/app_colors.dart';
 
 class XInputDecorationTheme {
