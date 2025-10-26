@@ -8,12 +8,15 @@ import 'package:word_guess/features/multi_player/dtos/join_room_response_dto.dar
 import 'package:word_guess/features/multi_player/dtos/send_invitation_response_dto.dart';
 import 'package:word_guess/features/multi_player/models/invitation_states.dart';
 import 'package:word_guess/features/multi_player/models/player_model.dart';
+import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/services/api_service.dart';
 import 'package:word_guess/services/storage_service.dart';
 import 'package:word_guess/services/hub_services.dart';
 import 'package:word_guess/services/network_services.dart';
 import 'package:word_guess/theme/app_colors.dart';
+import 'package:word_guess/util/helpers/helper.dart';
+import 'package:word_guess/widgets/secondary_button.dart';
 
 class HomePageController extends GetxController {
   HomePageController({
@@ -23,15 +26,16 @@ class HomePageController extends GetxController {
   }) : _networkService = networkService,
        _hub = hub,
        _storage = storageService;
+  //
   final StorageService _storage;
   HubServices _hub;
   final NetworkService _networkService;
   final ApiService _api = Get.find();
-  // final _options = Get.find<MultiplayerOptionsPageController>();
   final _options = Get.find<RoomController>();
   // Rx
   final playOnlineSwitch = false.obs;
   final nameFieldVisible = false.obs;
+  final isWaitingForConnection = false.obs;
   RxString get playerName => _storage.playerName.obs;
   RxInt get playedCount => _storage.playedCount.obs;
   late RxInt winCount;
@@ -42,8 +46,10 @@ class HomePageController extends GetxController {
   late StreamSubscription _internetSubscription;
 
   void enableOnlinePlay() async {
+    isWaitingForConnection.value = true;
     if (!hasInternet.value) {
-      showNoInternetAccessSnackbar();
+      _showNoInternetAccessSnackbar();
+      isWaitingForConnection.value = false;
       return;
     }
     if (nameController.text.isNotEmpty) {
@@ -53,18 +59,19 @@ class HomePageController extends GetxController {
     }
     if (_storage.playerName.isEmpty) {
       nameFieldVisible.value = true;
+      isWaitingForConnection.value = false;
+      showProfileBottomSheet();
       return;
     } else {
       nameFieldVisible.value = false;
     }
-    _hub.onReceiveOnlineUser = _handleReceiveConnectionIdAsync;
-
     await _hub.start();
-    playOnlineSwitch.value = true;
-    // await Future.delayed(1.seconds.abs());
+
     if (_hub.connectionState == HubConnectionState.connected) {
+      playOnlineSwitch.value = true;
+      isWaitingForConnection.value = false;
     } else {
-      showCanNotConnectToServerSnackbar();
+      _showCanNotConnectToServerSnackbar();
       await _hub.stop();
       playOnlineSwitch.value = false;
     }
@@ -73,37 +80,30 @@ class HomePageController extends GetxController {
   void enablePlayerName() {
     nameController.text = playerName.value;
     nameFieldVisible.value = true;
+    showProfileBottomSheet();
   }
 
   void disableOnlinePlay() {
     _hub.stop();
     // showNoInternetAccessSnackbar();
     playOnlineSwitch.value = false;
+    isWaitingForConnection.value = false;
   }
 
-  void _handleReceiveConnectionIdAsync(String connectionId) {
-    Get.snackbar('Connection Id', connectionId, backgroundColor: Colors.green);
-  }
-
-  void showNoInternetAccessSnackbar() {
-    Get.snackbar(
+  void _showNoInternetAccessSnackbar() {
+    
+    Helper.showSnackbar(
       'لا يوجد اتصال انترنت',
       'يجب ان تكون متصلا بالانترنت لتتمكن من اللعب عبر الشبكة',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.red.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
+     SnackbarTypes.fail
     );
   }
 
-  void showCanNotConnectToServerSnackbar() {
-    Get.snackbar(
+  void _showCanNotConnectToServerSnackbar() {
+    Helper.showSnackbar(
       'هناك مشكلة في السيرفر',
       'عذرا البرنامج لا يستطيع الاتصال بالسيرفر حاليا، لكن يمكنك دائما اللعب فرديا',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.red.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
+     SnackbarTypes.fail
     );
   }
 
@@ -127,49 +127,45 @@ class HomePageController extends GetxController {
 
   _showInvitationResponseSnackbar(String state) {
     if (state == InvitationStates.accepted) {
-      Get.snackbar(
+     Helper.showSnackbar(
         'تمت الموفق على الدعوة',
         'سيتم تحويلكم للعب الان استمتعوا بالتجربة',
+        SnackbarTypes.success
       );
     } else {
-      Get.snackbar(
+     Helper.showSnackbar(
         'تم رفض الدعوة',
         'للاسف قام اللاعب برفض الدعوة حاول مرة اخرى لاحقا',
-        colorText: Colors.white,
-        backgroundColor: XAppColorsLight.danger,
+       SnackbarTypes.fail
       );
     }
   }
 
   void _showInvitationReceivedDialog(PlayerModel player) {
-    Get.defaultDialog(
-      title: 'لقد وصلتك دعوة للعب',
-      content: Column(children: [Text("تمت دعوتك للعب من قبل ${player.name}")]),
-      confirm: ElevatedButton(
-        onPressed: () {
-          final res = SendInvitationResponseDto(
-            toPlayerId: player.id,
-            fromPlayerId: _storage.playerId,
-            state: InvitationStates.accepted,
-          ).toMap();
-          _api.post('player/invite/response', data: res);
+    Helper.showDialog(
+      'لقد وصلتك دعوة للعب',
+      children: [Text("تمت دعوتك للعب من قبل ${player.name}")],
+      confirmText: 'موافقة',
+      onConfirm: () {
+        final res = SendInvitationResponseDto(
+          toPlayerId: player.id,
+          fromPlayerId: _storage.playerId,
+          state: InvitationStates.accepted,
+        ).toMap();
+        _api.post('player/invite/response', data: res);
 
-          Get.back();
-        },
-        child: Text('موافقة'),
-      ),
-      cancel: ElevatedButton(
-        onPressed: () {
-          final res = SendInvitationResponseDto(
-            toPlayerId: player.id,
-            fromPlayerId: _storage.playerId,
-            state: InvitationStates.rejected,
-          ).toMap();
-          _api.post('player/invite/response', data: res);
-          Get.back();
-        },
-        child: Text('رفض'),
-      ),
+        Get.back();
+      },
+      cancelText: 'رفض',
+      onCancel: () {
+        final res = SendInvitationResponseDto(
+          toPlayerId: player.id,
+          fromPlayerId: _storage.playerId,
+          state: InvitationStates.rejected,
+        ).toMap();
+        _api.post('player/invite/response', data: res);
+        Get.back();
+      },
     );
   }
 
@@ -182,9 +178,11 @@ class HomePageController extends GetxController {
     final invitedPlayer = (_storage.playerId == creator.id) ? joiner : creator;
     final me = (_storage.playerId == joiner.id) ? joiner : creator;
 
-    Get.snackbar(
+   Helper.showSnackbar(
       'تم الانضمام',
       'تم الانضمام الى غرفة ${invitedPlayer.name} بنجاح',
+      SnackbarTypes.success
+
     );
     update();
 
@@ -196,5 +194,132 @@ class HomePageController extends GetxController {
       1.seconds.abs(),
       () => Get.toNamed(XRoutes.selectWord),
     );
+  }
+
+  showScoreBottomSheet() {
+    Get.bottomSheet(
+      Container(
+        width: double.infinity,
+        child: Column(
+          children: [
+            SizedBox(height: 20),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                child: Text(
+                  'لعبت ${_storage.playedCount} مرة',
+                  style: Get.textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                child: Text(
+                  'فزت ${_storage.winCount} مرة',
+                  style: Get.textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: XAppColorsLight.bg,
+    );
+  }
+
+  showProfileBottomSheet() async {
+    await Get.bottomSheet(
+      Container(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 20),
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: XAppColorsLight.bg_element_container,
+              child: Icon(
+                Icons.person,
+                size: 50,
+                color: XAppColorsLight.primary_text,
+              ),
+            ),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      playerName.value,
+                      style: Get.textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    SecondaryButton(
+                      'تعديل',
+                      onPressed: () {
+                        Get.back();
+                        enablePlayerName();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Visibility(
+              visible: nameFieldVisible.value,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        style: Get.textTheme.bodyMedium,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) {
+                          enableOnlinePlay();
+                          Get.back(closeOverlays: true);
+                          update();
+                        },
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          label: Text(
+                            XHomePageStrings.name.tr,
+                            style: Get.textTheme.bodySmall,
+                          ),
+                          helper: _storage.playerName.isNotEmpty
+                              ? null
+                              : Text(
+                                  XHomePageStrings.nameNecessaryMsg.tr,
+                                  style: Get.textTheme.bodySmall!.copyWith(
+                                    color: Colors.redAccent[400],
+                                  ),
+                                ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      SecondaryButton(
+                        'تأكيد',
+                        onPressed: () {
+                          enableOnlinePlay();
+                          Get.back(closeOverlays: true);
+                          update();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: XAppColorsLight.bg,
+    );
+    nameFieldVisible.value = false;
   }
 }

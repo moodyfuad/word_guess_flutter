@@ -20,6 +20,7 @@ class HubServices extends GetxService {
   final String userId;
   final String name;
   late String baseUrl;
+  HubConnection get connection => _connection;
   HubConnection get _connection => _initialized ??= _init();
   set _connection(HubConnection val) {
     _initialized = val;
@@ -38,7 +39,6 @@ class HubServices extends GetxService {
       _connection.on('ReceiveOpponentGuess', _handelReceiveOpponentGuess);
       _connection.on('ReceiveGameRoomCreated', _handleReceiveGameRoomCreated);
       _connection.on('ReceiveGameRoomJoined', _handleReceiveGameRoomJoined);
-      _connection.on('ReceiveOnlineUser', _handleReceiveOnlineUser);
       _connection.on('OnOpponentLeaveGame', _handleOnOpponentDisconnected);
       _connection.on('OnReciveOnlinePlayers', _handleOnReceiveOnlinePlayers);
       _connection.on('OnNewPlayerConnected', _handleOnNewPlayerConnected);
@@ -59,19 +59,18 @@ class HubServices extends GetxService {
     _connection.off('ReceiveOpponentGuess');
     _connection.off('ReceiveGameRoomCreated');
     _connection.off('ReceiveGameRoomJoined');
-    _connection.off('ReceiveOnlineUser');
     _connection.off('OnOpponentDisconnected');
     _connection.off('OnReciveOnlinePlayers');
     _connection.off('OnNewPlayerConnected');
     await _connection.stop();
   }
+
   // handlers
   void Function(String playerId, String word)? onReceiveOpponentSelectedItsWord;
   void Function(String playerId, String word)? onReceiveOpponentGuess;
   void Function(RoomDto room)? onReceiveGameRoomCreated;
   void Function(RoomDto room, PlayerModel creator, PlayerModel joiner)?
   onReceiveGameRoomJoined;
-  void Function(String connectionId)? onReceiveOnlineUser;
   void Function()? onOpponentLeaveGame;
   void Function(GetOnlinePlayersResponseDto pagedPlayers)?
   onReceiveOnlinePlayers;
@@ -116,10 +115,6 @@ class HubServices extends GetxService {
     onReceiveGameRoomJoined?.call(room, creator, joiner);
   }
 
-  void _handleReceiveOnlineUser(List? connectionId) {
-    onReceiveOnlineUser?.call(connectionId?[0] as String);
-  }
-
   void _handleOnOpponentDisconnected(List? args) {
     onOpponentLeaveGame?.call();
   }
@@ -156,6 +151,7 @@ class HubServices extends GetxService {
     final joiner = PlayerModel.fromMap((args)[2] as Map<String, dynamic>);
     onGetsInvitationResponse?.call(room, creator, joiner);
   }
+
   void _handleReceiveOpponentLeftGame(List? args) {
     onOpponentLeftGame?.call();
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:word_guess/theme/app_colors.dart';
+
 class XElevatedButtonTheme {
   XElevatedButtonTheme._();
   static ElevatedButtonThemeData get light => ElevatedButtonThemeData(
@@ -10,7 +11,7 @@ class XElevatedButtonTheme {
 
       backgroundColor: WidgetStatePropertyAll(XAppColorsLight.bg_actions),
       textStyle: WidgetStatePropertyAll(ThemeData.light().textTheme.titleSmall),
-      iconColor: WidgetStatePropertyAll(XAppColorsLight.primary_action),
+      iconColor: WidgetStatePropertyAll(XAppColorsLight.bg_primary_action),
       alignment: Alignment.center,
       shape: WidgetStatePropertyAll(
         RoundedRectangleBorder(

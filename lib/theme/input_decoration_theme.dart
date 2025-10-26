@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:word_guess/theme/app_colors.dart';
 
 class XInputDecorationTheme {
@@ -17,16 +18,16 @@ class XInputDecorationTheme {
       color: XAppColorsLight.danger,
     ),
     floatingLabelBehavior: FloatingLabelBehavior.auto,
-    labelStyle: ThemeData.light().textTheme.labelLarge,
-    helperStyle: ThemeData.light().textTheme.labelLarge,
+    labelStyle: Get.textTheme.labelSmall,
+    helperStyle: Get.textTheme.labelSmall,
     floatingLabelAlignment: FloatingLabelAlignment.start,
     filled: true,
-
+    visualDensity: VisualDensity.comfortable,
     fillColor: XAppColorsLight.bg_actions,
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(
-        color: XAppColorsLight.primary_action,
+        color: XAppColorsLight.bg_primary_action,
         strokeAlign: BorderSide.strokeAlignOutside,
         width: 2,
       ),

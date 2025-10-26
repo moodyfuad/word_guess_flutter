@@ -5,7 +5,7 @@ class XSwitchTheme {
   XSwitchTheme._();
 
   static SwitchThemeData get light => SwitchThemeData(
-    thumbColor: WidgetStatePropertyAll(XAppColorsLight.primary_action),
+    thumbColor: WidgetStatePropertyAll(XAppColorsLight.bg_primary_action),
     trackColor: WidgetStatePropertyAll(XAppColorsLight.bg_actions),
     trackOutlineColor: WidgetStatePropertyAll(XAppColorsLight.border),
     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),

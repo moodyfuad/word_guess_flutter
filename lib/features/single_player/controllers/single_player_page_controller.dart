@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/single_player/models/letter_model.dart';
 import 'package:word_guess/features/single_player/models/letter_states.dart';
-import 'package:word_guess/features/single_player/models/levels.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/services/storage_service.dart';
 import 'package:word_guess/util/helpers/helper.dart';
@@ -13,7 +12,8 @@ class XSinglePlayerPageController extends GetxController {
   final RxList<WordModel> board = <WordModel>[].obs;
   int _currentRow = 0;
   int _currentCol = 0;
-  final carouselController = CarouselController(initialItem: 0);
+  final scrollController = ScrollController(keepScrollOffset: true);
+  final double _letterHeight = 64;
   // Getters
   int get attempts => board.length;
   int get wordLength => _selectedWord.length;
@@ -39,27 +39,13 @@ class XSinglePlayerPageController extends GetxController {
       }
     }
     board.addAll(words);
-
-    // _placeCorrectCharsAtNextRow();
     update();
   }
 
-  void startGame({
-    String? word,
-    int attempts = 3,
-    XLevels level = XLevels.medium,
-  }) {
+  void startGame({String? word, int attempts = 3, int level = 3}) {
     _currentCol = 0;
     _currentRow = 0;
-    _selectedWord =
-        word ??
-        Helper.getRandomWord(switch (level) {
-          XLevels.easy => 3,
-          XLevels.medium => 4,
-          XLevels.hard => 5,
-          XLevels.extreme => 6,
-          XLevels.legendary => 7,
-        });
+    _selectedWord = word ?? Helper.getRandomWord(2 + level);
     board.value = List.generate(
       attempts,
       (_) => WordModel.generate(wordLength),
@@ -68,6 +54,7 @@ class XSinglePlayerPageController extends GetxController {
   }
 
   void onKeyTap(String key) {
+    _animateListView();
     if (_currentRow >= attempts) {
       return;
     }
@@ -77,7 +64,6 @@ class XSinglePlayerPageController extends GetxController {
         onKeyTap(key);
         return;
       } else {
-        carouselController.animateToItem(_currentRow);
         board[_currentRow].letters[_currentCol] = LetterModel(
           letter: key,
           state: XLetterStates.none,
@@ -92,7 +78,7 @@ class XSinglePlayerPageController extends GetxController {
   }
 
   void onSubmitPressed() {
-    carouselController.animateToItem(_currentRow);
+    _animateListView();
     if (_currentRow < attempts && _isSubmitAllowed()) {
       _validateRow(board[_currentRow].letters);
       _placeCorrectCharsAtNextRow();
@@ -113,11 +99,11 @@ class XSinglePlayerPageController extends GetxController {
 
       _showLoseDialog();
     }
-    carouselController.animateToItem(_currentRow);
+    _animateListView();
   }
 
   void onBackspacePressed() {
-    carouselController.animateToItem(_currentRow);
+    _animateListView();
 
     if (_currentCol > 0 && _currentRow < attempts) {
       final letterToDelete = board[_currentRow].letters[_currentCol - 1];
@@ -188,43 +174,47 @@ class XSinglePlayerPageController extends GetxController {
     }
   }
 
-
   bool canPop = false;
-  _showLoseDialog() {
-    Get.defaultDialog(
-      title: '😆 خاسر 😆',
-      titleStyle: Get.textTheme.displayMedium,
+  _animateListView() {
+    if (_currentRow > 7) {
+      scrollController.animateTo(
+        _letterHeight * (_currentRow - 7).toDouble(),
+        curve: Curves.easeInOut,
+        duration: 0.2.seconds.abs(),
+      );
+    }
+  }
 
-      content: Column(
-        children: [
-          Text('كلمتك كانت', style: Get.textTheme.titleSmall),
-          Text(_selectedWord, style: Get.textTheme.displayLarge),
-        ],
-      ),
-      confirm: ElevatedButton(
-        onPressed: () {
-          canPop = true;
-          Get.back(closeOverlays: true);
-        },
-        child: Text('موافق'),
-      ),
+  _showLoseDialog() {
+    Helper.showDialog(
+      '😆 خاسر 😆',
+
+      children: [
+        Text('كلمتك كانت', style: Get.textTheme.titleSmall),
+        Text(_selectedWord, style: Get.textTheme.displayLarge),
+      ],
+
+      confirmText: 'موافق',
+      onConfirm: () {
+        canPop = true;
+        Get.back(closeOverlays: true);
+      },
     );
   }
 
   _showWinDialog() {
-    Get.defaultDialog(
-      title: '🎉 فائز  🎉',
-      titleStyle: Get.textTheme.displayMedium,
-      content: Text(
-        'مبروك الفوز\nالان سيتم تحويلك لصفحة تحديد المستوى\nحاول تختار مستوى اصعب',
-        textAlign: TextAlign.center,
-      ),
-      confirm: ElevatedButton(
-        onPressed: () {
-          Get.back(closeOverlays: true);
-        },
-        child: Text('موافق'),
-      ),
+    Helper.showDialog(
+      '🎉 فائز  🎉',
+      children: [
+        Text(
+          'مبروك الفوز\nالان سيتم تحويلك لصفحة تحديد المستوى\nحاول تختار مستوى اصعب',
+          textAlign: TextAlign.center,
+        ),
+      ],
+      confirmText: 'موافق',
+      onConfirm: () {
+        Get.back(closeOverlays: true);
+      },
     );
   }
 }

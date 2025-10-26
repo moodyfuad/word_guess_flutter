@@ -8,6 +8,7 @@ import 'package:word_guess/services/api_service.dart';
 import 'package:word_guess/services/storage_service.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/services/hub_services.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 
 class MultiplayerOptionsPageController extends GetxController {
   // Rx
@@ -45,12 +46,18 @@ class MultiplayerOptionsPageController extends GetxController {
       fromJsonT: (map) => RoomDto.fromMap(map),
     );
     if (!response.success) {
-      Get.snackbar('فشل انشاء الغرفة', response.message);
+      Helper.showSnackbar(
+        'فشل انشاء الغرفة',
+        response.message,
+        SnackbarTypes.success,
+      );
     } else {
-      Get.snackbar('تم انشاء الغرفة', 'لقد قمت بانشاء غرفة للعب');
+      Helper.showSnackbar(
+        'تم انشاء الغرفة',
+        'لقد قمت بانشاء غرفة للعب',
+        SnackbarTypes.fail,
+      );
       key.value = response.data?.key ?? "";
-      // room = response.data;
-      // room;
       Get.find<RoomController>().room = response.data;
     }
     update();
@@ -67,15 +74,17 @@ class MultiplayerOptionsPageController extends GetxController {
 
   @override
   void onInit() {
-    
     _hubServices.onReceiveGameRoomJoined = (room, creator, joiner) {
       key.value = room.key;
-      
-      roomController.opponent = (_storage.playerId == creator.id) ? joiner : creator;
+
+      roomController.opponent = (_storage.playerId == creator.id)
+          ? joiner
+          : creator;
       roomController.me = (_storage.playerId != creator.id) ? joiner : creator;
-       Get.snackbar(
+      Helper.showSnackbar(
         'تم الانضمام',
         'تم الانضمام الى غرفة ${roomController.opponent?.name} بنجاح',
+        SnackbarTypes.success,
       );
       roomController.room = room;
       update();
@@ -95,5 +104,4 @@ class MultiplayerOptionsPageController extends GetxController {
   }
 
   //private
-  
 }

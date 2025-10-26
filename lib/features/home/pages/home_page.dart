@@ -5,6 +5,7 @@ import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/theme/app_colors.dart';
 import 'package:word_guess/util/helpers/helper.dart';
+import 'package:word_guess/widgets/secondary_button.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -15,105 +16,95 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          XHomePageStrings.appName.tr,
-          style: Get.textTheme.displayLarge,
+          'مرحبا ${_pageController.playerName.value}',
+
+          style: TextStyle(inherit: true),
         ),
         centerTitle: true,
       ),
-      body: Stack(
+      body: Column(
         children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: 70,
+              maxWidth: Get.width * 0.9,
+            ),
+            child: ListView(
+              padding: EdgeInsets.all(0),
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              children: [
+                FittedBox(
+                  child: SecondaryButton(
+                    'ملفي الشخصي',
+                    onPressed: () {
+                      _pageController.showProfileBottomSheet();
+                    },
+                  ),
+                ),
+                FittedBox(
+                  child: SecondaryButton(
+                    'إحصائياتي',
+                    onPressed: () {
+                      _pageController.showScoreBottomSheet();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           Obx(
-            () => Align(
-              alignment: AlignmentGeometry.topRight,
-
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 20, 10, 0),
-                child: Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'مرحبا ${_pageController.playerName}',
-                          style: Get.textTheme.displayMedium,
-                        ),
-                        IconButton(
-                          onPressed: _pageController.enablePlayerName,
-                          icon: Icon(
-                            Icons.settings,
-                            size: 30,
-                            color: XAppColorsLight.info,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        _buildPlayerScore(
-                          'عدد مرات اللعب',
-                          _pageController.playedCount.value,
-                        ),
-                        _buildPlayerScore(
-                          'عدد مرات الفوز',
-                          _pageController.winCount.value,
-                        ),
-                      ],
-                    ),
-
-                    Card(
+            () => Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
                       child: Row(
                         children: [
-                          Switch(
-                            inactiveThumbColor: XAppColorsLight.border,
-                            activeThumbColor: XAppColorsLight.primary_action,
-                            value: _pageController.playOnlineSwitch.value,
-                            onChanged: (val) => val
-                                ? _pageController.enableOnlinePlay()
-                                : _pageController.disableOnlinePlay(),
-                          ),
+                          _pageController.isWaitingForConnection.value
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10.0,
+                                    horizontal: 20,
+                                  ),
+                                  child: CircularProgressIndicator.adaptive(),
+                                )
+                              : Switch(
+                                  inactiveThumbColor: XAppColorsLight.border,
+                                  activeThumbColor:
+                                      XAppColorsLight.bg_primary_action,
+                                  value: _pageController.playOnlineSwitch.value,
+                                  onChanged: (val) => val
+                                      ? _pageController.enableOnlinePlay()
+                                      : _pageController.disableOnlinePlay(),
+                                ),
+                          SizedBox(width: 10),
                           FittedBox(
-                            child: _pageController.playOnlineSwitch.value
+                            child: _pageController.isWaitingForConnection.value
+                                ? Text(
+                                    'جاري الاتصال...',
+                                    style: Get.textTheme.bodyMedium?.copyWith(
+                                      color: XAppColorsLight.secondary_text,
+                                    ),
+                                  )
+                                : _pageController.playOnlineSwitch.value
                                 ? Text(XHomePageStrings.onlinePlayEnabled.tr)
                                 : Text(XHomePageStrings.onlinePlayDisabled.tr),
                           ),
                         ],
                       ),
                     ),
-                    Visibility(
-                      visible: _pageController.nameFieldVisible.value,
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            style: Get.textTheme.bodyMedium,
-                            textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) =>
-                                _pageController.enableOnlinePlay(),
-                            controller: _pageController.nameController,
-                            decoration: InputDecoration(
-                              label: Text(
-                                XHomePageStrings.name.tr,
-                                style: Get.textTheme.bodySmall,
-                              ),
-                              helper: Text(
-                                XHomePageStrings.nameNecessaryMsg.tr,
-                                style: Get.textTheme.bodySmall!.copyWith(
-                                  color: Colors.redAccent[400],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-          Align(
-            alignment: AlignmentGeometry.center,
+          SizedBox(height: 10),
+          SizedBox(
+            width: Get.width * 0.95,
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -125,23 +116,24 @@ class HomePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _HomeButtonWidget(
+                    SecondaryButton(
                       XHomePageStrings.singlePlay.tr,
                       icon: Icons.person,
-                      onPress: () => Get.toNamed(XRoutes.levels),
+                      onPressed: () => Get.toNamed(XRoutes.levels),
                     ),
                     Obx(
-                      () => _HomeButtonWidget(
+                      () => SecondaryButton(
                         enabled: _pageController.playOnlineSwitch.value,
                         XHomePageStrings.multiPlay.tr,
                         icon: Icons.people,
-                        onPress: () => Get.toNamed(XRoutes.multiplayerOptions),
+                        onPressed: () =>
+                            Get.toNamed(XRoutes.multiplayerOptions),
                       ),
                     ),
-                    _HomeButtonWidget(
+                    SecondaryButton(
                       XHomePageStrings.gameRoles.tr,
                       icon: Icons.info_outline,
-                      onPress: Helper.showGameRoles,
+                      onPressed: Helper.showGameRoles,
                     ),
                   ],
                 ),
@@ -149,74 +141,6 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlayerScore(String title, int playedCount) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          flex: 2,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                title,
-                style: Get.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                playedCount.toString(),
-                style: Get.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _HomeButtonWidget extends StatelessWidget {
-  const _HomeButtonWidget(
-    this.content, {
-    this.icon,
-    required this.onPress,
-    this.enabled = true,
-  });
-  final String content;
-  final bool enabled;
-  final IconData? icon;
-  final void Function() onPress;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          disabledBackgroundColor: XAppColorsLight.bg,
-        ),
-        onPressed: enabled ? onPress : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 30),
-            SizedBox(width: 5),
-            Text(content, style: Get.textTheme.titleSmall),
-          ],
-        ),
       ),
     );
   }

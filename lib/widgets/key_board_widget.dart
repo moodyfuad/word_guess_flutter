@@ -98,15 +98,23 @@ class XKeyWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: primary
-                  ? XAppColorsLight.primary_action
+                  ? XAppColorsLight.bg_primary_action
                   : Colors.blueGrey[300]!,
+              width: 1,
             ),
             color: primary
-                ? XAppColorsLight.primary_action
+                ? XAppColorsLight.bg_primary_action
                 : XAppColorsLight.bg_element_container,
           ),
           child: Center(
-            child: Text(keyLetter, style: Get.textTheme.titleSmall),
+            child: Text(
+              keyLetter,
+              style: Get.textTheme.titleSmall?.copyWith(
+                color: primary
+                    ? XAppColorsLight.on_primary_action
+                    : XAppColorsLight.primary_text,
+              ),
+            ),
           ),
         ),
       ),

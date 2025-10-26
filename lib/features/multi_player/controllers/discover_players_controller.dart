@@ -20,22 +20,25 @@ class DiscoverPlayersController extends GetxController {
   Rx<RoomDto?> room = Rx<RoomDto?>(null);
   Rx<PlayerModel?> invitedPlayer = Rx(null);
   Rx<PlayerModel?> me = Rx(null);
+  final _attempts = 8.obs;
+  final _length = 5.obs;
 
   void sendInvitation(String playerId) async {
-    int? wordLength = await _showSelectWordLengthDialog();
-    final data = SendInvitationRequestDto(
-      toPlayerId: playerId,
-      fromPlayerId: _storage.playerId,
-      wordLength: wordLength,
-    ).toMap();
-
-    await _api.post('player/invite', data: data);
+    if (await _showSelectWordLengthDialog()) {
+      final data = SendInvitationRequestDto(
+        toPlayerId: playerId,
+        fromPlayerId: _storage.playerId,
+        wordLength: _length.value,
+      ).toMap();
+      await _api.post('player/invite', data: data);
+    }
   }
 
   getPlayers() async {
     final map = GetOnlinePlayersRequestDto(pageNumber: 1, pageSize: 10).toMap();
     try {
-      final response = (await _api.get('players',
+      final response = (await _api.get(
+        'players',
         body: map,
         fromJsonT: (map) => GetOnlinePlayersResponseDto.fromMap(map),
       )).data;
@@ -67,37 +70,38 @@ class DiscoverPlayersController extends GetxController {
     players.removeWhere((p) => p.id == player.id);
   }
 
-  Future<int> _showSelectWordLengthDialog() async {
-    final lengthController = TextEditingController();
-    await Get.defaultDialog<int>(
-      title: 'اعدادات الغرفة',
-      titleStyle: Get.textTheme.displaySmall,
-      content: Column(
-        children: [
-          Text("حدد عدد الاحرف", style: Get.textTheme.titleLarge),
-          Helper.buildTextFieldForCreateRoom(
-            lengthController,
-            "عدد الاحرف",
-            "يجب ان لا يزيد على 8",
-          ),
-        ],
-      ),
-      confirm: ElevatedButton(
-        onPressed: () {
-          final parsed = int.tryParse(
-            utf8.decode(lengthController.text.codeUnits),
-          );
-          final len = parsed == null
-              ? 5
-              : parsed > 8
-              ? 8
-              : parsed;
-          Get.back(result: len);
-          return;
-        },
-        child: Text('موافق'),
-      ),
+  Future<bool> _showSelectWordLengthDialog() async {
+    bool result = false;
+    await Helper.showDialog(
+      'اعدادات الغرفة',
+      confirmText: 'موافق',
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Helper.buildSelectNumberWidget(
+                start: 3,
+                end: 7,
+                (selected) => _length.value = selected,
+                label: "عدد الاحرف",
+              ),
+            ),
+            Expanded(
+              child: Helper.buildSelectNumberWidget(
+                start: 6,
+                end: 30,
+                (selected) => _attempts.value = selected,
+                label: "عدد المحاولات",
+              ),
+            ),
+          ],
+        ),
+      ],
+
+      onConfirm: () {
+        result = true;
+      },
     );
-    return int.tryParse(lengthController.text) ?? 5;
+    return result;
   }
 }

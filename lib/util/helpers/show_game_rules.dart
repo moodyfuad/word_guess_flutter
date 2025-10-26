@@ -3,12 +3,15 @@ import 'package:get/get.dart';
 import 'package:word_guess/features/single_player/models/letter_states.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
+import 'package:word_guess/theme/app_colors.dart';
+import 'package:word_guess/widgets/secondary_button.dart';
 import 'package:word_guess/widgets/word_widget.dart';
 
 void showGameRulesImp() {
   final textStyle = Get.textTheme.bodyMedium;
   final double dividerHeight = 15;
   Get.defaultDialog(
+    backgroundColor: XAppColorsLight.bg,
     title: XHomePageStrings.gameRoles.tr,
     titleStyle: Get.textTheme.titleMedium,
     content: Column(
@@ -48,11 +51,7 @@ void showGameRulesImp() {
         ),
       ],
     ),
-    confirm: ElevatedButton.icon(
-      label: Text('تمام'),
-      icon: Icon(Icons.thumb_up),
-      onPressed: Get.back,
-    ),
+    confirm: SecondaryButton('تمام', onPressed: Get.back),
   );
 }
 

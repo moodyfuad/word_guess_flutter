@@ -19,7 +19,7 @@ class XSelectWordPageController extends GetxController {
   final hub = Get.find<HubServices>();
   final api = Get.find<ApiService>();
   final storage = Get.find<StorageService>();
-  // final _options = Get.find<RoomController>();
+  // final _options = Get.find<RoomController>();a
   // getters
   final roomController = Get.find<RoomController>();
   RoomDto get room => roomController.room!;
@@ -53,7 +53,7 @@ class XSelectWordPageController extends GetxController {
       );
 
       final response = await api.post('room/submitWord', data: dto.toMap());
-      
+
       setMyWord();
       isMyWordSelected.value = response.success;
       //todo: stop the timer
@@ -72,9 +72,6 @@ class XSelectWordPageController extends GetxController {
     }
   }
 
-  // void sendGuess() {
-  //   hub.sendMyGuess(storage.playerId!, wordController.text);
-  // }
   handelPop() async {
     final d = await Helper.showOnWillPopDialog('تنبيه', [
       'سيتم احتساب النتيجة كخسارة',
@@ -104,6 +101,7 @@ class XSelectWordPageController extends GetxController {
     hub.onReceiveOpponentGuess = (id, guess) {
       opponentGuess.value = guess;
     };
+    //todo: uncomment
     _startTimer();
 
     super.onInit();
@@ -130,34 +128,25 @@ class XSelectWordPageController extends GetxController {
 
   _showRandomWordSelectedDialog() async {
     await Future.delayed(1.seconds.abs());
-    final dialog = Get.defaultDialog<bool>(
-      title: 'لقد تم اختيار كلمة عشوائية',
-      content: Column(
-        children: [
-          Text("كلمتك هي"),
-          Text(wordController.text, style: Get.textTheme.displayMedium),
-        ],
-      ),
-      confirm: ElevatedButton(
-        onPressed: () {
-          Get.back();
-        },
-        child: Text('موافق'),
-      ),
+    Helper.showDialog(
+      'لقد تم اختيار كلمة عشوائية',
+
+      children: [
+        Text("كلمتك هي"),
+        Text(wordController.text, style: Get.textTheme.displayMedium),
+      ],
+
+      confirmText: 'موافق',
+
       onConfirm: () => true,
-      onWillPop: () => Future.value(true),
     );
   }
 
   _showOpponentLeftSnackbar() {
-    Get.snackbar(
+    Helper.showSnackbar(
       'انقطع الاتصال عند الخصم',
       'انتظر 20 ثانية ليتم احتساب فوزك بشكل تلقائي',
-
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.red.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
+      SnackbarTypes.fail,
     );
   }
 }

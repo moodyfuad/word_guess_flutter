@@ -15,6 +15,6 @@ class XCardTheme {
     ),
     color: XAppColorsLight.bg_element_container,
     elevation: 4,
-    surfaceTintColor: XAppColorsLight.highlight,
+    surfaceTintColor: XAppColorsLight.border,
   );
 }

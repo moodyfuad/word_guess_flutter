@@ -5,8 +5,8 @@ class XTextTheme {
   static String get fontFamily => 'Cairo';
   static Color get primaryLightTextColor => XAppColorsLight.primary_text;
   static Color get secondaryLightTextColor => XAppColorsLight.secondary_text;
-  static Color get primaryDarkTextColor => XAppColorsDark.primary_text;
-  static Color get secondaryDarkTextColor => XAppColorsDark.secondary_text;
+  static Color get primaryDarkTextColor => primaryDarkTextColor;
+  static Color get secondaryDarkTextColor => secondaryDarkTextColor;
   XTextTheme._();
   static TextTheme get light => ThemeData.light().textTheme.copyWith(
     displayLarge: TextStyle(
@@ -77,13 +77,13 @@ class XTextTheme {
     ),
     labelMedium: TextStyle(
       inherit: true,
-      fontSize: 18,
+      fontSize: 17,
       fontFamily: fontFamily,
       color: secondaryLightTextColor,
     ),
     labelSmall: TextStyle(
       inherit: true,
-      fontSize: 18,
+      fontSize: 14,
       fontFamily: fontFamily,
       color: secondaryLightTextColor,
     ),

@@ -30,7 +30,9 @@ class MultiplayerGamePageController extends GetxController {
   final opponentGuess = ''.obs;
   int _currentRow = 0;
   int _currentCol = 0;
-  final carouselController = CarouselController(initialItem: 0);
+  final double _letterHeight = 64;
+
+  final scrollController = ScrollController(keepScrollOffset: true);
 
   int get attempts => room?.maxAttempts ?? 0;
   int get wordLength => room?.wordLength ?? 0;
@@ -40,7 +42,8 @@ class MultiplayerGamePageController extends GetxController {
   // final _options = Get.find<MultiplayerOptionsPageController>();
   final _options = Get.find<RoomController>();
 
-  final myTurn = false.obs;
+  bool _iWon = false;
+  bool _opponentWon = false;
 
   final _hub = Get.find<HubServices>();
   final _api = Get.find<ApiService>();
@@ -75,7 +78,7 @@ class MultiplayerGamePageController extends GetxController {
         onKeyTap(key);
         return;
       } else {
-        carouselController.animateToItem(_currentRow);
+        _animateListView();
         board[_currentRow].letters[_currentCol] = LetterModel(
           letter: key,
           state: XLetterStates.none,
@@ -90,7 +93,7 @@ class MultiplayerGamePageController extends GetxController {
   }
 
   void onSubmitPressed() {
-    carouselController.animateToItem(_currentRow);
+    _animateListView();
     if (_currentRow < attempts && _isSubmitAllowed()) {
       _validateRow(_opponentWord, board[_currentRow].letters);
       _placeCorrectCharsAtNextRow();
@@ -111,7 +114,7 @@ class MultiplayerGamePageController extends GetxController {
       _storage.increasePlayedCount();
       _showLoseDialog();
     }
-    carouselController.animateToItem(_currentRow);
+    _animateListView();
   }
 
   void _checkWinCase(WordModel word, bool forMe) {
@@ -121,17 +124,19 @@ class MultiplayerGamePageController extends GetxController {
     if (win && forMe) {
       _storage.increasePlayedCount();
       _storage.increaseWinCount();
-      _showWinDialog();
+      _iWon = true;
       _sendPlayerScore();
+      _showWinDialog();
     } else if (win && !forMe) {
       _storage.increasePlayedCount();
+      _opponentWon = true;
       _sendPlayerScore();
       _showLoseDialog();
     }
   }
 
   void onBackspacePressed() {
-    carouselController.animateToItem(_currentRow);
+    _animateListView();
 
     if (_currentCol > 0 && _currentRow < attempts) {
       final letterToDelete = board[_currentRow].letters[_currentCol - 1];
@@ -209,9 +214,11 @@ class MultiplayerGamePageController extends GetxController {
 
     if (d) {
       //todo: update the score
-      _storage.increasePlayedCount();
-      await _leaveGame();
-      //todo: send leave game to the opponent
+      if (!_iWon && !_opponentWon) {
+        _storage.increasePlayedCount();
+        await _leaveGame();
+        //todo: send leave game to the opponent
+      }
       Get.until(
         (route) => ![
           XRoutes.multiplayerGame,
@@ -255,17 +262,34 @@ class MultiplayerGamePageController extends GetxController {
     // todo : add playedCount,winCount
     // _api.post('player/score', didWin)
   }
+  _animateListView() {
+    if (_currentRow > 5) {
+      scrollController.animateTo(
+        _letterHeight * (_currentRow - 5).toDouble(),
+        curve: Curves.easeInOut,
+        duration: 0.2.seconds.abs(),
+      );
+    }
+  }
 
   //^ Dialogs
-  _showWinDialog() {
-    Get.defaultDialog(
-      title: '🎉 فائز',
-      titleStyle: Get.textTheme.displayMedium,
-
-      content: Text(
-        'مبروك الفوز\nالان سيتم تحويلك لصفحة البداية',
-        textAlign: TextAlign.center,
-      ),
+  _showWinDialog() async {
+    _iWon = true;
+    await Helper.showDialog(
+      '🎉 فائز',
+      children: [
+        Text(
+          'مبروك الفوز',
+          style: Get.textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          'الان سيتم تحويلك لصفحة البداية',
+          style: Get.textTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+      ],
+      confirmText: 'تأكيد',
       onConfirm: () {
         Get.until(
           (route) => ![
@@ -274,69 +298,44 @@ class MultiplayerGamePageController extends GetxController {
             // XRoutes.multiplayerOptions,
           ].contains(Get.currentRoute),
         );
-      },
-
-      onWillPop: () {
-        Get.until(
-          (route) => ![
-            XRoutes.multiplayerGame,
-            XRoutes.selectWord,
-            // XRoutes.multiplayerOptions,
-          ].contains(Get.currentRoute),
-        );
-        return Future.value(true);
       },
     );
   }
 
   _showLoseDialog() {
-    Get.defaultDialog(
-      title: '😆 خاسر 😆',
-      titleStyle: Get.textTheme.displayMedium,
-
-      content: Column(
-        children: [
-          Text(
-            'مبروك الخسارة بس عادي تقدر تتحدى مرة ثانية و تفوز\nالان سيتم تحويلك لصفحة البداية',
-            textAlign: TextAlign.center,
-          ),
-          Text('كلمة $opponentName كانت', textAlign: TextAlign.center),
-          Text(
-            _opponentWord,
-            textAlign: TextAlign.center,
-            style: Get.textTheme.displayLarge,
-          ),
-        ],
-      ),
+    _opponentWon = true;
+    _hub.onOpponentLeftGame = null;
+    Helper.showDialog(
+      '😆 خاسر 😆',
+      children: [
+        Text(
+          'مبروك الخسارة بس عادي تقدر تتحدى مرة ثانية و تفوز\nالان سيتم تحويلك لصفحة البداية',
+          textAlign: TextAlign.center,
+        ),
+        Text('كلمة $opponentName كانت', textAlign: TextAlign.center),
+        Text(
+          _opponentWord,
+          textAlign: TextAlign.center,
+          style: Get.textTheme.displayLarge,
+        ),
+      ],
+      confirmText: 'تأكيد',
       onConfirm: () {
         Get.until(
           (route) => ![
             XRoutes.multiplayerGame,
             XRoutes.selectWord,
-            // XRoutes.multiplayerOptions,
           ].contains(Get.currentRoute),
         );
-      },
-      onWillPop: () {
-        Get.until(
-          (route) => ![
-            XRoutes.multiplayerGame,
-            XRoutes.selectWord,
-            // XRoutes.multiplayerOptions,
-          ].contains(Get.currentRoute),
-        );
-        return Future.value(true);
       },
     );
   }
 
   void _handleOpponentLeftGame() {
-    Get.snackbar(
+    Helper.showSnackbar(
       'انقطع الاتصال عند الخصم',
       'تم احتساب فوزك بشكل تلقائي',
-      barBlur: 0.1,
-      overlayBlur: 0.1,
-      duration: 5.seconds.abs(),
+      SnackbarTypes.info,
     );
     _showWinDialog();
   }

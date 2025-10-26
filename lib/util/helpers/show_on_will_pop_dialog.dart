@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:word_guess/theme/app_colors.dart';
 
 Future<bool> showOnWillPopDialogImp(
   String title,
@@ -8,6 +9,7 @@ Future<bool> showOnWillPopDialogImp(
 }) async {
   bool val = false;
   final d = await Get.defaultDialog<bool>(
+    backgroundColor: XAppColorsLight.bg,
     title: title,
     titleStyle: Get.textTheme.displayMedium,
     content: ConstrainedBox(

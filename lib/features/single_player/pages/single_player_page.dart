@@ -6,6 +6,7 @@ import 'package:word_guess/features/single_player/models/word_model.dart';
 import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/util/helpers/helper.dart';
 import 'package:word_guess/widgets/key_board_widget.dart';
+import 'package:word_guess/widgets/word_widget.dart';
 
 class XSinglePlayerPage extends StatelessWidget {
   final _controller = Get.find<XSinglePlayerPageController>();
@@ -47,22 +48,17 @@ class XSinglePlayerPage extends StatelessWidget {
               children: [
                 Expanded(
                   flex: 2,
-                  child: CarouselView.weighted(
-                    controller: _controller.carouselController,
-                    scrollDirection: Axis.vertical,
-
-                    // itemExtent: 100,
-                    onTap: _controller.carouselController.animateToItem,
+                  child: ListView(
+                    controller: _controller.scrollController,
+                    shrinkWrap: true,
                     padding: EdgeInsets.all(5),
-                    flexWeights: [2, 3, 4, 4, 5, 4, 4, 3, 2],
-                    shrinkExtent: 10,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(8),
-                    ),
 
-                    children: _controller.board.map((word) {
-                      return _buildWordRow(word);
-                    }).toList(),
+                    children: [
+                      ..._controller.board.map((word) {
+                        return _buildWordRow(word);
+                      }).toList(),
+                      SizedBox(height: 10),
+                    ],
                   ),
                 ),
 
@@ -88,47 +84,7 @@ class XSinglePlayerPage extends StatelessWidget {
       init: XSinglePlayerPageController(),
       initState: (_) {},
       builder: (_) {
-        return Row(
-          children: word.letters
-              .map((letter) {
-                return Expanded(
-                  key: ValueKey(letter.letter),
-                  child:
-                      Container(
-                            margin: const EdgeInsets.all(4),
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey),
-                              color: Helper.getLetterColorByState(letter.state),
-                            ),
-                            child: Center(
-                              child: FittedBox(
-                                child: Text(
-                                  letter.letter,
-                                  style: Get.textTheme.titleMedium,
-                                ),
-                              ),
-                            ),
-                          )
-                          .animate(autoPlay: true)
-                          .flip(
-                            duration: Duration(milliseconds: 300),
-                            begin: -1,
-                            end: 0,
-                            curve: Curves.easeOut,
-                          ),
-                );
-              })
-              .toList()
-              .animate(
-                interval: Duration(milliseconds: 300),
-                autoPlay: true,
-                effects: [FlipEffect()],
-              )
-              .flip(begin: 0.8, end: 0)
-              .animate(),
-        );
+        return XWordWidget(word: word);
       },
     );
   }

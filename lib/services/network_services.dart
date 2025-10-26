@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
@@ -21,6 +22,7 @@ class NetworkService extends GetxService {
       }
     });
     _internetSubscription = InternetConnection().onStatusChange.listen((event) {
+      log(event.name);
       if (event == InternetStatus.connected) {
         isOnline.value = true;
       } else {
