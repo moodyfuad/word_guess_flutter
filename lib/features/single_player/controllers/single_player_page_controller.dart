@@ -21,12 +21,6 @@ class XSinglePlayerPageController extends GetxController {
   final _storage = Get.find<StorageService>();
   //todo: handel when attempts reached
   //todo: display the word when lose
-  // public methods
-  void replay() {
-    _currentCol = 0;
-    _currentRow = 0;
-    startGame();
-  }
 
   void addAttempt([int length = 1]) {
     final words = List.generate(length, (_) => WordModel.generate(wordLength));
@@ -40,6 +34,7 @@ class XSinglePlayerPageController extends GetxController {
     }
     board.addAll(words);
     update();
+    _animateListViewToAddedRow();
   }
 
   void startGame({String? word, int attempts = 3, int level = 3}) {
@@ -78,25 +73,22 @@ class XSinglePlayerPageController extends GetxController {
   }
 
   void onSubmitPressed() {
+    bool isWinCase = false;
     _animateListView();
     if (_currentRow < attempts && _isSubmitAllowed()) {
       _validateRow(board[_currentRow].letters);
-      _placeCorrectCharsAtNextRow();
-      final isWinCase = (board[_currentRow].letters.every(
+      isWinCase = (board[_currentRow].letters.every(
         (l) => l.state == XLetterStates.correct,
       ));
       if (isWinCase) {
-        _storage.increasePlayedCount();
-        _storage.increaseWinCount();
         _showWinDialog();
       }
+      _placeCorrectCharsAtNextRow();
       _currentRow++;
       _currentCol = 0;
       update();
     }
-    if (_currentRow >= attempts) {
-      _storage.increasePlayedCount();
-
+    if (_currentRow >= attempts && !isWinCase) {
       _showLoseDialog();
     }
     _animateListView();
@@ -109,7 +101,7 @@ class XSinglePlayerPageController extends GetxController {
       final letterToDelete = board[_currentRow].letters[_currentCol - 1];
       if (letterToDelete.state == XLetterStates.correct) {
         _currentCol = (_currentCol == 1) ? 1 : _currentCol - 1;
-        if (_currentCol > 1) {
+        if (_currentCol >= 1) {
           onBackspacePressed();
         }
         return;
@@ -185,6 +177,16 @@ class XSinglePlayerPageController extends GetxController {
     }
   }
 
+  _animateListViewToAddedRow() {
+    if (_currentRow > 7) {
+      scrollController.animateTo(
+        _letterHeight * (board.length - 1 - 7).toDouble(),
+        curve: Curves.easeInOut,
+        duration: 0.2.seconds.abs(),
+      );
+    }
+  }
+
   _showLoseDialog() {
     Helper.showDialog(
       '😆 خاسر 😆',
@@ -194,8 +196,13 @@ class XSinglePlayerPageController extends GetxController {
         Text(_selectedWord, style: Get.textTheme.displayLarge),
       ],
 
-      confirmText: 'موافق',
+      confirmText: 'اضافة محاولة',
       onConfirm: () {
+        addAttempt();
+      },
+      cancelText: 'خروج',
+      onCancel: () {
+        _storage.increasePlayedCount();
         canPop = true;
         Get.back(closeOverlays: true);
       },
@@ -213,6 +220,8 @@ class XSinglePlayerPageController extends GetxController {
       ],
       confirmText: 'موافق',
       onConfirm: () {
+        _storage.increasePlayedCount();
+        _storage.increaseWinCount();
         Get.back(closeOverlays: true);
       },
     );

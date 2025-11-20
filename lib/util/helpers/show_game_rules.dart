@@ -51,7 +51,12 @@ void showGameRulesImp() {
         ),
       ],
     ),
-    confirm: SecondaryButton('تمام', onPressed: Get.back),
+    confirm: SecondaryButton(
+      'تمام',
+      onPressed: () {
+        Get.back(result: true);
+      },
+    ),
   );
 }
 

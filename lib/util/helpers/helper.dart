@@ -41,6 +41,7 @@ class Helper {
     String title, {
     required List<Widget> children,
     required String confirmText,
+    bool closeDialogOnSelection = true,
     void Function()? onConfirm,
     String? cancelText,
     void Function()? onCancel,
@@ -48,6 +49,7 @@ class Helper {
     title,
     children: children,
     confirmText: confirmText,
+    closeDialogOnSelection: closeDialogOnSelection,
     onConfirm: onConfirm,
     cancelText: cancelText,
     onCancel: onCancel,

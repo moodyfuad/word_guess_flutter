@@ -7,12 +7,15 @@ showDialogImp(
   String title, {
   required List<Widget> children,
   required String confirmText,
+  required bool closeDialogOnSelection,
   void Function()? onConfirm,
   String? cancelText,
   void Function()? onCancel,
 }) async {
   bool result = false;
   await Get.defaultDialog(
+    titlePadding: EdgeInsets.all(16),
+    contentPadding: EdgeInsets.all(16),
     title: title,
     titleStyle: Get.textTheme.titleLarge,
     backgroundColor: XAppColorsLight.bg,
@@ -20,7 +23,10 @@ showDialogImp(
     confirm: SecondaryButton(
       confirmText,
       onPressed: () {
-        Get.back(result: true);
+        // Get.back(result: true);
+        if (closeDialogOnSelection) {
+          Get.back(result: true);
+        }
         result = true;
       },
     ),
@@ -29,7 +35,11 @@ showDialogImp(
         : SecondaryButton(
             cancelText,
             onPressed: () {
-              Get.back(result: false);
+              // Get.back(result: false);
+
+              if (closeDialogOnSelection) {
+                Get.back(result: true);
+              }
               result = false;
             },
           ),

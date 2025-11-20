@@ -17,7 +17,6 @@ class XLevelsPage extends StatelessWidget {
 
   final _1ExpansibleController = ExpansibleController();
   final _2ExpansibleController = ExpansibleController();
-  final _caruoselController = CarouselController();
   int _selectedLevel = 1;
 
   int _attempts = 8;
@@ -26,99 +25,100 @@ class XLevelsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('لعب فردي'), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildChallengeYourSelf(),
-            SizedBox(height: 10),
-            Expansible(
-              headerBuilder: (context, animation) {
-                return SecondaryButton(
-                  'تحدى صديقك',
-                  onPressed: () {
-                    _2ExpansibleController.isExpanded
-                        ? _2ExpansibleController.collapse()
-                        : _2ExpansibleController.expand();
-                    if (_1ExpansibleController.isExpanded) {
-                      _1ExpansibleController.collapse();
-                    }
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildChallengeYourSelf(),
+              SizedBox(height: 10),
+              Expanded(
+                child: Expansible(
+                  headerBuilder: (context, animation) {
+                    return SecondaryButton(
+                      'تحدى صديقك',
+                      onPressed: () {
+                        _2ExpansibleController.isExpanded
+                            ? _2ExpansibleController.collapse()
+                            : _2ExpansibleController.expand();
+                        if (_1ExpansibleController.isExpanded) {
+                          _1ExpansibleController.collapse();
+                        }
+                      },
+                      trailingIcon: _2ExpansibleController.isExpanded
+                          ? Icons.expand_less_rounded
+                          : Icons.expand_more_rounded,
+                    );
                   },
-                  trailingIcon: _1ExpansibleController.isExpanded
-                      ? Icons.expand_less_rounded
-                      : Icons.expand_more_rounded,
-                );
-              },
-              bodyBuilder: (context, animation) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 20.0,
-                          right: 20,
-                          top: 20,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxHeight: 100,
-                                maxWidth: Get.width * 0.8,
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      enabled: false,
+                  bodyBuilder: (context, animation) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.max,
+                      // mainAxisAlignment: .spaceBetween,
+                      children: [
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              left: 20.0,
+                              right: 20,
+                              top: 20,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: 100,
+                                    maxWidth: Get.width * 0.8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextFormField(
+                                          enabled: false,
 
-                                      textAlign: TextAlign.center,
-                                      controller: _textController,
-                                      decoration: InputDecoration(
-                                        labelText: 'اكتب الكلمة',
-                                        disabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
+                                          textAlign: TextAlign.center,
+                                          controller: _textController,
+                                          decoration: InputDecoration(
+                                            labelText: 'اكتب الكلمة',
+                                            disabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: Colors.transparent,
+                                              ),
+                                            ),
                                           ),
-                                          borderSide: BorderSide(
-                                            color: Colors.transparent,
-                                          ),
+                                          onFieldSubmitted: (value) {
+                                            if (value.length > 2) {
+                                              controller.startGame(
+                                                word: value,
+                                                attempts: _attempts,
+                                              );
+                                              Get.toNamed(XRoutes.singlePlayer);
+                                            }
+                                            controller.startGame(
+                                              word: value,
+                                              attempts: _attempts,
+                                            );
+                                            Get.toNamed(XRoutes.singlePlayer);
+                                          },
                                         ),
                                       ),
-                                      onFieldSubmitted: (value) {
-                                        if (value.length > 2) {
-                                          controller.startGame(
-                                            word: value,
-                                            attempts: _attempts,
-                                          );
-                                          Get.toNamed(XRoutes.singlePlayer);
-                                        }
-                                        controller.startGame(
-                                          word: value,
-                                          attempts: 6,
-                                        );
-                                        Get.toNamed(XRoutes.singlePlayer);
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(width: 20),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          'عدد المحاولات',
-                                          style: Get.textTheme.labelMedium,
-                                        ),
-                                        ConstrainedBox(
-                                          constraints: BoxConstraints(
-                                            maxHeight: 70,
-                                          ),
-                                          child:
-                                              ListWheelScrollView.useDelegate(
+                                      SizedBox(width: 20),
+                                      Expanded(
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              'عدد المحاولات',
+                                              style: Get.textTheme.labelMedium,
+                                            ),
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                maxHeight: 70,
+                                              ),
+                                              child: ListWheelScrollView.useDelegate(
                                                 itemExtent: 30,
                                                 diameterRatio: 2,
                                                 perspective: 0.009,
@@ -142,64 +142,72 @@ class XLevelsPage extends StatelessWidget {
                                                       ),
                                                     ),
                                               ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(height: 20),
+                              ],
                             ),
-                            SizedBox(height: 20),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                    XKeyBoardWidget(
-                      onKeyTap: (key) {
-                        _textController.text += key;
-                      },
-                      onSummitTap: () {
-                        final word = _textController.text;
+                        Spacer(),
+                        // SizedBox(height: 20),
+                        XKeyBoardWidget(
+                          onKeyTap: (key) {
+                            _textController.text += key;
+                          },
+                          onSummitTap: () {
+                            final word = _textController.text;
 
-                        if (word.length > 2) {
-                          controller.startGame(
-                            word: _textController.text,
-                            attempts: _attempts,
-                          );
-                          Get.toNamed(XRoutes.singlePlayer);
-                        }
-                      },
-                      onBackspaceTap: () {
-                        final word = _textController.text;
+                            if (word.length > 2) {
+                              controller.startGame(
+                                word: _textController.text,
+                                attempts: _attempts,
+                              );
+                              Get.toNamed(XRoutes.singlePlayer);
+                            }
+                          },
+                          onBackspaceTap: () {
+                            final word = _textController.text;
 
-                        if (word.isNotEmpty) {
-                          _textController.text = word.substring(
-                            0,
-                            word.length - 1,
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                );
-              },
-              expansibleBuilder: (context, header, body, animation) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    header,
-                    FadeTransition(
-                      opacity: animation,
-                      alwaysIncludeSemantics: true,
-                      child: body,
-                    ),
-                  ],
-                );
-              },
-              controller: _2ExpansibleController,
-            ),
-          ],
+                            if (word.isNotEmpty) {
+                              _textController.text = word.substring(
+                                0,
+                                word.length - 1,
+                              );
+                            }
+                          },
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                    );
+                  },
+                  expansibleBuilder: (context, header, body, animation) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        header,
+                        Expanded(
+                          child: FadeTransition(
+                            opacity: animation,
+                            alwaysIncludeSemantics: true,
+
+                            child: body,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  controller: _2ExpansibleController,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -295,7 +303,7 @@ class XLevelsPage extends StatelessWidget {
                 SecondaryButton(
                   'تأكيد',
                   onPressed: () {
-                    controller.startGame(level: _selectedLevel, attempts: 6);
+                    controller.startGame(level: _selectedLevel, attempts: 8);
                     Get.toNamed(XRoutes.singlePlayer);
                   },
                 ),

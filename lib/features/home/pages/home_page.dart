@@ -20,40 +20,17 @@ class HomePage extends StatelessWidget {
 
           style: TextStyle(inherit: true),
         ),
+        leadingWidth: 100,
+        leading: IconButton(
+          onPressed: () {
+            _pageController.showProfileBottomSheet();
+          },
+          icon: Icon(Icons.person_outline_rounded),
+        ),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: 70,
-              maxWidth: Get.width * 0.9,
-            ),
-            child: ListView(
-              padding: EdgeInsets.all(0),
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              children: [
-                FittedBox(
-                  child: SecondaryButton(
-                    'ملفي الشخصي',
-                    onPressed: () {
-                      _pageController.showProfileBottomSheet();
-                    },
-                  ),
-                ),
-                FittedBox(
-                  child: SecondaryButton(
-                    'إحصائياتي',
-                    onPressed: () {
-                      _pageController.showScoreBottomSheet();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           Obx(
             () => Padding(
               padding: const EdgeInsets.all(10),

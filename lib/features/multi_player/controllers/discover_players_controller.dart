@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,6 +28,7 @@ class DiscoverPlayersController extends GetxController {
         toPlayerId: playerId,
         fromPlayerId: _storage.playerId,
         wordLength: _length.value,
+        maxAttempts: _attempts.value,
       ).toMap();
       await _api.post('player/invite', data: data);
     }
@@ -39,7 +39,7 @@ class DiscoverPlayersController extends GetxController {
     try {
       final response = (await _api.get(
         'players',
-        body: map,
+        queryParameters: map,
         fromJsonT: (map) => GetOnlinePlayersResponseDto.fromMap(map),
       )).data;
 
@@ -71,6 +71,8 @@ class DiscoverPlayersController extends GetxController {
   }
 
   Future<bool> _showSelectWordLengthDialog() async {
+    _attempts.value = 8;
+    _length.value = 3;
     bool result = false;
     await Helper.showDialog(
       'اعدادات الغرفة',
@@ -80,7 +82,7 @@ class DiscoverPlayersController extends GetxController {
           children: [
             Expanded(
               child: Helper.buildSelectNumberWidget(
-                start: 3,
+                start: _length.value,
                 end: 7,
                 (selected) => _length.value = selected,
                 label: "عدد الاحرف",
@@ -88,7 +90,7 @@ class DiscoverPlayersController extends GetxController {
             ),
             Expanded(
               child: Helper.buildSelectNumberWidget(
-                start: 6,
+                start: _attempts.value,
                 end: 30,
                 (selected) => _attempts.value = selected,
                 label: "عدد المحاولات",

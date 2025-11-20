@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:signalr_core/signalr_core.dart';
 import 'package:word_guess/features/multi_player/dtos/get_online_players_response_dto.dart';
 import 'package:word_guess/features/multi_player/dtos/join_room_response_dto.dart';
+import 'package:word_guess/features/multi_player/dtos/send_invitation_request_dto.dart';
 import 'package:word_guess/features/multi_player/models/player_model.dart';
 import 'package:word_guess/services/api_constants.dart';
 
@@ -29,8 +32,12 @@ class HubServices extends GetxService {
   HubConnection? _initialized;
   HubConnectionState? get connectionState => _connection.state;
 
-  Future<void> start() async {
+  Future<void> start({
+    void Function(String error)? onDisconnect,
+    void Function(String connectionIs)? onReconnected,
+  }) async {
     _connection = _init();
+
     if (_connection.state == HubConnectionState.disconnected) {
       _connection.on(
         'ReceiveOpponentSelectedItsWord',
@@ -50,6 +57,13 @@ class HubServices extends GetxService {
       );
       _connection.on('OnInvitationRejected', _handleOnInvitationRejected);
       _connection.on('ReceiveOpponentLeftGame', _handleReceiveOpponentLeftGame);
+      _connection.onclose(
+        (exception) => onDisconnect?.call(exception.toString()),
+      );
+      _connection.onreconnecting((e) => onDisconnect?.call(e.toString()));
+      _connection.onreconnected(
+        (connectionId) => onReconnected?.call(connectionId ?? ''),
+      );
       await _connection.start();
     }
   }
@@ -78,7 +92,8 @@ class HubServices extends GetxService {
   void Function(PlayerModel player)? onPlayerDisConnected;
   void Function(RoomDto room, PlayerModel creator, PlayerModel joiner)?
   onGetsInvitationResponse;
-  void Function(PlayerModel response)? onInvitationReceived;
+  void Function(PlayerModel response, SendInvitationRequestDto details)?
+  onInvitationReceived;
   void Function(String state)? onInvitationRejected;
   void Function()? onOpponentLeftGame;
 
@@ -138,7 +153,10 @@ class HubServices extends GetxService {
 
   void _handleOnInvitationReceived(List? args) {
     var response = PlayerModel.fromMap(args![0] as Map<String, dynamic>);
-    onInvitationReceived?.call(response);
+    var details = SendInvitationRequestDto.fromMap(
+      args[1] as Map<String, dynamic>,
+    );
+    onInvitationReceived?.call(response, details);
   }
 
   void _handleOnInvitationRejected(List? args) {

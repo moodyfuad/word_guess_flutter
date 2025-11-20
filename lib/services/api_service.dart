@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile, Response;
 import 'package:word_guess/services/api_constants.dart';
 import 'package:word_guess/services/storage_service.dart';
+import 'package:word_guess/util/helpers/helper.dart';
 
 // Custom Exceptions
 class ApiException implements Exception {
@@ -284,7 +285,10 @@ class ApiService extends GetxService {
       } else if (e.response != null) {
         final errorData = e.response!.data;
         final errorMessage = errorData is Map
-            ? errorData['message'] ?? errorData['error'] ?? 'Unknown error'
+            ? errorData['message'] ??
+                  errorData['error'] ??
+                  // (errorData['errors'] as Map) ??
+                  'Unknown error'
             : 'Server error: ${e.response!.statusCode}';
 
         throw ApiException(errorMessage, e.response!.statusCode);
@@ -304,11 +308,17 @@ class ApiService extends GetxService {
       ApiException e => e.toString(),
       _ => 'An unexpected error occurred',
     };
-    Get.defaultDialog(
-      title: 'Error',
-      middleText: message,
-      textConfirm: 'OK',
-      onConfirm: () => Get.back(),
+    Helper.showDialog(
+      "خطأ",
+      children: [Text(message, textAlign: TextAlign.center)],
+      confirmText: "موافق",
+      // onConfirm: () => Get.back(),
     );
+    // Get.defaultDialog(
+    //   title: 'Error',
+    //   middleText: message,
+    //   textConfirm: 'OK',
+    //   onConfirm: () => Get.back(),
+    // );
   }
 }

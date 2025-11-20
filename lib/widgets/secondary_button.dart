@@ -27,16 +27,19 @@ class SecondaryButton extends StatelessWidget {
         ),
 
         onPressed: enabled ? onPressed : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) Icon(icon, size: 30),
-            if (icon != null) SizedBox(width: 5),
-            FittedBox(child: Text(content, style: Get.textTheme.titleSmall)),
-            if (trailingIcon != null) SizedBox(width: 5),
-            if (trailingIcon != null) Icon(trailingIcon, size: 30),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) Icon(icon, size: 30),
+              if (icon != null) SizedBox(width: 5),
+              FittedBox(child: Text(content, style: Get.textTheme.titleSmall)),
+              if (trailingIcon != null) SizedBox(width: 5),
+              if (trailingIcon != null) Icon(trailingIcon, size: 30),
+            ],
+          ),
         ),
       ),
     );

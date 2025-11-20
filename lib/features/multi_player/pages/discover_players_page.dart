@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/multi_player/controllers/discover_players_controller.dart';
+import 'package:word_guess/widgets/secondary_button.dart';
 
 class DiscoverPlayersPage extends StatelessWidget {
   DiscoverPlayersPage({super.key});
@@ -13,21 +14,23 @@ class DiscoverPlayersPage extends StatelessWidget {
       appBar: AppBar(title: Text('اكتشف اللاعبين')),
       body: Obx(() {
         final players = _controller.players;
-        return ListView.builder(
-          itemCount: _controller.players.length,
-          shrinkWrap: true,
+        return players.isEmpty
+            ? Center(child: Text('لا يوجد لاعبين متصلين'))
+            : ListView.builder(
+                itemCount: players.length,
+                shrinkWrap: true,
 
-          itemBuilder: (context, index) {
-            return _UserCard(
-              name: players[index].name,
-              description:
-                  'لعب ${players[index].playCount} و فاز ${players[index].winCount}',
-              onButtonPress: () {
-                _controller.sendInvitation(players[index].id);
-              },
-            );
-          },
-        );
+                itemBuilder: (context, index) {
+                  return _UserCard(
+                    name: players[index].name,
+                    description:
+                        'لعب ${players[index].playCount} و فاز ${players[index].winCount}',
+                    onButtonPress: () {
+                      _controller.sendInvitation(players[index].id);
+                    },
+                  );
+                },
+              );
       }),
     );
   }
@@ -61,14 +64,16 @@ class _UserCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: Get.textTheme.titleSmall),
+                Text(name, style: Get.textTheme.titleMedium),
                 Text(description, style: Get.textTheme.labelSmall),
               ],
             ),
             Spacer(),
-            ElevatedButton(
-              onPressed: onButtonPress,
-              child: Text('ارسال\nدعوة', style: Get.textTheme.titleSmall),
+            SecondaryButton(
+              'دعوة',
+              onPressed: onButtonPress!,
+
+              // child: Text(, style: Get.textTheme.titleSmall),
             ),
           ],
         ),

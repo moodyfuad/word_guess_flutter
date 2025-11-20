@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:signalr_core/signalr_core.dart';
+import 'package:word_guess/features/home/widgets/profile_bottom_sheet.dart';
 import 'package:word_guess/features/multi_player/controllers/room_controller.dart';
 import 'package:word_guess/features/multi_player/dtos/join_room_response_dto.dart';
+import 'package:word_guess/features/multi_player/dtos/send_invitation_request_dto.dart';
 import 'package:word_guess/features/multi_player/dtos/send_invitation_response_dto.dart';
 import 'package:word_guess/features/multi_player/models/invitation_states.dart';
 import 'package:word_guess/features/multi_player/models/player_model.dart';
-import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/routes/routes.dart';
 import 'package:word_guess/services/api_service.dart';
 import 'package:word_guess/services/storage_service.dart';
@@ -16,7 +17,6 @@ import 'package:word_guess/services/hub_services.dart';
 import 'package:word_guess/services/network_services.dart';
 import 'package:word_guess/theme/app_colors.dart';
 import 'package:word_guess/util/helpers/helper.dart';
-import 'package:word_guess/widgets/secondary_button.dart';
 
 class HomePageController extends GetxController {
   HomePageController({
@@ -60,21 +60,41 @@ class HomePageController extends GetxController {
     if (_storage.playerName.isEmpty) {
       nameFieldVisible.value = true;
       isWaitingForConnection.value = false;
+
       showProfileBottomSheet();
       return;
     } else {
       nameFieldVisible.value = false;
     }
-    await _hub.start();
+    try {
+      await _hub.start(onDisconnect: _handleOnDisconnected);
+    } catch (_) {
+      _showCanNotConnectToServerSnackbar();
+      await _hub.stop();
+      playOnlineSwitch.value = false;
+      isWaitingForConnection.value = false;
+    }
 
     if (_hub.connectionState == HubConnectionState.connected) {
       playOnlineSwitch.value = true;
       isWaitingForConnection.value = false;
-    } else {
-      _showCanNotConnectToServerSnackbar();
-      await _hub.stop();
-      playOnlineSwitch.value = false;
     }
+  }
+
+  _handleOnDisconnected(String? error) {
+    disableOnlinePlay();
+    Helper.showDialog(
+      "انقطع الاتصال بالخادم",
+      children: [
+        Text(
+          'تم قطع الاتصال بالخادم، يرجى التحقق من اتصال الانترنت الخاص بك او ان هناك مشكلة في السيرفر',
+        ),
+      ],
+      confirmText: "موافق",
+      onConfirm: () {
+        Get.until((route) => Get.currentRoute == XRoutes.home);
+      },
+    );
   }
 
   void enablePlayerName() {
@@ -91,11 +111,10 @@ class HomePageController extends GetxController {
   }
 
   void _showNoInternetAccessSnackbar() {
-    
     Helper.showSnackbar(
       'لا يوجد اتصال انترنت',
       'يجب ان تكون متصلا بالانترنت لتتمكن من اللعب عبر الشبكة',
-     SnackbarTypes.fail
+      SnackbarTypes.fail,
     );
   }
 
@@ -103,7 +122,7 @@ class HomePageController extends GetxController {
     Helper.showSnackbar(
       'هناك مشكلة في السيرفر',
       'عذرا البرنامج لا يستطيع الاتصال بالسيرفر حاليا، لكن يمكنك دائما اللعب فرديا',
-     SnackbarTypes.fail
+      SnackbarTypes.fail,
     );
   }
 
@@ -127,24 +146,32 @@ class HomePageController extends GetxController {
 
   _showInvitationResponseSnackbar(String state) {
     if (state == InvitationStates.accepted) {
-     Helper.showSnackbar(
+      Helper.showSnackbar(
         'تمت الموفق على الدعوة',
         'سيتم تحويلكم للعب الان استمتعوا بالتجربة',
-        SnackbarTypes.success
+        SnackbarTypes.success,
       );
     } else {
-     Helper.showSnackbar(
+      Helper.showSnackbar(
         'تم رفض الدعوة',
         'للاسف قام اللاعب برفض الدعوة حاول مرة اخرى لاحقا',
-       SnackbarTypes.fail
+        SnackbarTypes.fail,
       );
     }
   }
 
-  void _showInvitationReceivedDialog(PlayerModel player) {
+  void _showInvitationReceivedDialog(
+    PlayerModel player,
+    SendInvitationRequestDto details,
+  ) {
     Helper.showDialog(
-      'لقد وصلتك دعوة للعب',
-      children: [Text("تمت دعوتك للعب من قبل ${player.name}")],
+      'لقد دعاك ${player.name} للعب',
+      children: [
+        Text("اعدادات الغرفة", style: Get.textTheme.titleMedium),
+        SizedBox(height: 10),
+        Text("عدد محاولات التخمين: ${details.maxAttempts}"),
+        Text(" عدد احرف الكلمة: ${details.wordLength}"),
+      ],
       confirmText: 'موافقة',
       onConfirm: () {
         final res = SendInvitationResponseDto(
@@ -178,11 +205,10 @@ class HomePageController extends GetxController {
     final invitedPlayer = (_storage.playerId == creator.id) ? joiner : creator;
     final me = (_storage.playerId == joiner.id) ? joiner : creator;
 
-   Helper.showSnackbar(
+    Helper.showSnackbar(
       'تم الانضمام',
       'تم الانضمام الى غرفة ${invitedPlayer.name} بنجاح',
-      SnackbarTypes.success
-
+      SnackbarTypes.success,
     );
     update();
 
@@ -196,130 +222,12 @@ class HomePageController extends GetxController {
     );
   }
 
-  showScoreBottomSheet() {
-    Get.bottomSheet(
-      Container(
-        width: double.infinity,
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                child: Text(
-                  'لعبت ${_storage.playedCount} مرة',
-                  style: Get.textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                child: Text(
-                  'فزت ${_storage.winCount} مرة',
-                  style: Get.textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: XAppColorsLight.bg,
-    );
-  }
-
   showProfileBottomSheet() async {
     await Get.bottomSheet(
-      Container(
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: XAppColorsLight.bg_element_container,
-              child: Icon(
-                Icons.person,
-                size: 50,
-                color: XAppColorsLight.primary_text,
-              ),
-            ),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      playerName.value,
-                      style: Get.textTheme.titleLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                    SecondaryButton(
-                      'تعديل',
-                      onPressed: () {
-                        Get.back();
-                        enablePlayerName();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Visibility(
-              visible: nameFieldVisible.value,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        style: Get.textTheme.bodyMedium,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) {
-                          enableOnlinePlay();
-                          Get.back(closeOverlays: true);
-                          update();
-                        },
-                        controller: nameController,
-                        decoration: InputDecoration(
-                          label: Text(
-                            XHomePageStrings.name.tr,
-                            style: Get.textTheme.bodySmall,
-                          ),
-                          helper: _storage.playerName.isNotEmpty
-                              ? null
-                              : Text(
-                                  XHomePageStrings.nameNecessaryMsg.tr,
-                                  style: Get.textTheme.bodySmall!.copyWith(
-                                    color: Colors.redAccent[400],
-                                  ),
-                                ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      SecondaryButton(
-                        'تأكيد',
-                        onPressed: () {
-                          enableOnlinePlay();
-                          Get.back(closeOverlays: true);
-                          update();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      ignoreSafeArea: false,
+      ProfileBottomSheet(homeController: this),
       backgroundColor: XAppColorsLight.bg,
+      isScrollControlled: true,
     );
-    nameFieldVisible.value = false;
   }
 }

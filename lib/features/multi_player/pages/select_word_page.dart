@@ -5,7 +5,6 @@ import 'package:word_guess/features/multi_player/controllers/select_word_page_co
 import 'package:word_guess/localization/home_page_strings.dart';
 import 'package:word_guess/theme/app_colors.dart';
 import 'package:word_guess/widgets/key_board_widget.dart';
-import 'package:word_guess/widgets/secondary_button.dart';
 
 class XSelectWordPage extends StatelessWidget {
   XSelectWordPage({super.key});

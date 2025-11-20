@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/single_player/controllers/single_player_page_controller.dart';
 import 'package:word_guess/features/single_player/models/word_model.dart';
@@ -28,10 +27,6 @@ class XSinglePlayerPage extends StatelessWidget {
             ),
           ),
           centerTitle: true,
-          leading: IconButton(
-            onPressed: _controller.replay,
-            icon: Icon(Icons.replay),
-          ),
           actions: [
             IconButton(
               onPressed: Helper.showGameRoles,
@@ -54,9 +49,16 @@ class XSinglePlayerPage extends StatelessWidget {
                     padding: EdgeInsets.all(5),
 
                     children: [
-                      ..._controller.board.map((word) {
-                        return _buildWordRow(word);
-                      }).toList(),
+                      Obx(() {
+                        return Column(
+                          children: _controller.board
+                              .map((word) => _buildWordRow(word))
+                              .toList(),
+                        );
+                      }),
+                      // ..._controller.board.map((word) {
+                      //   return _buildWordRow(word);
+                      // }).toList(),
                       SizedBox(height: 10),
                     ],
                   ),

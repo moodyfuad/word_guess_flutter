@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:word_guess/features/multi_player/controllers/multiplayer_game_page_controller.dart';
 import 'package:word_guess/features/single_player/models/letter_states.dart';
@@ -92,15 +91,12 @@ class MultiplayerGamePage extends StatelessWidget {
                     ),
                   ),
 
-                  Expanded(
-                    flex: 2,
-                    child: XKeyBoardWidget(
-                      onKeyTap: _controller.onKeyTap,
-                      onSummitTap: _controller.onSubmitPressed,
-                      onBackspaceTap: _controller.onBackspacePressed,
-                    ),
+                  XKeyBoardWidget(
+                    onKeyTap: _controller.onKeyTap,
+                    onSummitTap: _controller.onSubmitPressed,
+                    onBackspaceTap: _controller.onBackspacePressed,
                   ),
-                  // SizedBox(height: 50),
+                  SizedBox(height: 10),
                 ],
               ),
             ),

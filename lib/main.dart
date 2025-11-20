@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,7 +14,6 @@ import 'package:word_guess/services/network_services.dart';
 import 'package:word_guess/theme/app_theme.dart';
 
 void main() async {
-  
   WidgetsFlutterBinding.ensureInitialized();
 
   await Get.putAsync(() async => await NetworkService().init());
@@ -35,11 +33,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      // title: 'Word Guess',
-      // theme: ThemeData.light(),
-      // darkTheme: ThemeData.dark(),
-      // themeMode: ThemeMode.light, // اجبر الثيم على وضع واحد مؤقتًا
-      // //
+     
+      builder: (context, child) {
+        return Overlay(
+          initialEntries: [OverlayEntry(builder: (context) => child!)],
+        );
+      },
       debugShowCheckedModeBanner: false,
       getPages: XPages.appPages,
       initialRoute: XRoutes.home,

@@ -3,11 +3,13 @@ class SendInvitationRequestDto {
   final String toPlayerId;
   final String fromPlayerId;
   final int wordLength;
+  final int maxAttempts;
 
   SendInvitationRequestDto({
     required this.toPlayerId,
     required this.fromPlayerId,
-    this.wordLength = 5 ,
+    this.wordLength = 5,
+    this.maxAttempts = 5,
   });
 
   Map<String, dynamic> toMap() {
@@ -15,6 +17,7 @@ class SendInvitationRequestDto {
       'toPlayerId': toPlayerId,
       'fromPlayerId': fromPlayerId,
       'wordLength': wordLength,
+      'maxAttempts': maxAttempts,
     };
   }
 
@@ -23,7 +26,7 @@ class SendInvitationRequestDto {
       toPlayerId: map['toPlayerId'] as String,
       fromPlayerId: map['fromPlayerId'] as String,
       wordLength: map['wordLength'] as int,
+      maxAttempts: map['maxAttempts'] as int,
     );
   }
-
 }

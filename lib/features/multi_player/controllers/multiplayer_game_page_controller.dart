@@ -200,25 +200,19 @@ class MultiplayerGamePageController extends GetxController {
   }
 
   _leaveGame() async {
-    await _api.post(
-      'room/leaveGame',
-      data: {'roomKey': room?.key, 'playerId': _storage.playerId},
-    );
+    // todo : check
+    if (_iWon || _opponentWon) {
+      return;
+    } else {
+      await _api.post(
+        'room/leaveGame',
+        data: {'roomKey': room?.key, 'playerId': _storage.playerId},
+      );
+    }
   }
 
   handelPop() async {
-    final d = await Helper.showOnWillPopDialog('تنبيه', [
-      'سيتم احتساب النتيجة كخسارة',
-      'هل ترغب في مغادرة الغرفة ؟',
-    ], onResult: (val) {});
-
-    if (d) {
-      //todo: update the score
-      if (!_iWon && !_opponentWon) {
-        _storage.increasePlayedCount();
-        await _leaveGame();
-        //todo: send leave game to the opponent
-      }
+    if (_iWon || _opponentWon) {
       Get.until(
         (route) => ![
           XRoutes.multiplayerGame,
@@ -226,6 +220,27 @@ class MultiplayerGamePageController extends GetxController {
           // XRoutes.multiplayerOptions,
         ].contains(Get.currentRoute),
       );
+    } else {
+      final d = await Helper.showOnWillPopDialog('تنبيه', [
+        'سيتم احتساب النتيجة كخسارة',
+        'هل ترغب في مغادرة الغرفة ؟',
+      ], onResult: (val) {});
+
+      if (d) {
+        //todo: update the score
+        if (!_iWon && !_opponentWon) {
+          _storage.increasePlayedCount();
+          await _leaveGame();
+          //todo: send leave game to the opponent
+        }
+        Get.until(
+          (route) => ![
+            XRoutes.multiplayerGame,
+            XRoutes.selectWord,
+            // XRoutes.multiplayerOptions,
+          ].contains(Get.currentRoute),
+        );
+      }
     }
   }
 
