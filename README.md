@@ -1,16 +1,14 @@
 # word_guess
+## short description:
+this mobile app or game is an advanced Arabic version of wordle game
+you can play as single player OR
+Multiplayers where you can play with your friend via shared key or invitation.
 
-A new Flutter project.
+## technology used:
+1- Getx eco-system for auth, Middleware, state management, etc.
+2- api and SignalR integrated from Asp.net core api Backend Link [https://github.com/moodyfuad/Guess_Word_Backend]
 
-## Getting Started
+## notes
+* the app is in the development stage, however it can be used.
+* 
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
